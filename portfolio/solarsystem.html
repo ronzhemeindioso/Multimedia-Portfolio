@@ -275,8 +275,8 @@
       const factsHTML = p.facts.map(f => `<li>${f}</li>`).join('');
       const isVideo = p.image.endsWith('.webm') || p.image.endsWith('.mp4');
       const mediaTag = isVideo
-        ? `<video class="celestial-img" src="${p.image}" autoplay loop muted playsinline onerror="this.style.display='none'"></video>`
-        : `<img src="${p.image}" alt="${p.name}" class="celestial-img" onerror="this.style.display='none'" />`;
+        ? `<video class="celestial-img" src="${p.image}" autoplay loop muted playsinline style="pointer-events:none;" onerror="this.style.display='none'"></video>`
+        : `<img src="${p.image}" alt="${p.name}" class="celestial-img" style="pointer-events:none;" onerror="this.style.display='none'" />`;
 
       return `
         <div class="celestial-card">
