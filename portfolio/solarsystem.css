@@ -491,10 +491,6 @@
   transition: letter-spacing 0.3s ease;
 }
 
-.celestial-card:hover .celestial-name {
-  letter-spacing: 0.1em;
-}
-
 .celestial-desc {
   font-size: 0.95rem;
   font-weight: 300;
@@ -585,10 +581,6 @@
   transition: color 0.3s ease;
 }
 
-.celestial-card:hover .celestial-facts-list li {
-  color: #ccc;
-}
-
 .celestial-facts-list li::before {
   content: '•';
   position: absolute;
@@ -605,16 +597,18 @@
   justify-content: center;
   overflow: hidden;
   border-radius: 12px;
+  background: transparent;  /* add this */
 }
 
 .celestial-img {
   width: 100%;
   height: 100%;
   min-height: 340px;
-  object-fit: cover;
+  object-fit: contain;       /* changed from cover to contain */
   border-radius: 12px;
   display: block;
   pointer-events: none;
+  background: transparent;  /* add this */
 }
 
 .celestial-img:hover,
