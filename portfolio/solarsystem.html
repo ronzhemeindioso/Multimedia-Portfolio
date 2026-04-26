@@ -54,7 +54,7 @@
     <h2 class="content-title">Project Overview</h2>
     <div class="overview-layout">
       <div class="overview-text">
-        <p>The Solar System depicted on this page shows how each planet orbits the Sun and rotates on its own axis, with scientific accuracy. The Python script handles accurate speeds and distances that align with real scientific data.</p>
+        <p>The Solar System depicted on this page shows how each planet orbits the Sun and rotates on its own axis, with scientific accuracy. The Python script handles accurate speeds and distances based on real scientific data, with scale adjustments for visualization purposes.</p>
       </div>
       <div class="overview-stats">
         <div class="stat-item">
@@ -169,7 +169,7 @@
   <!-- CALCULATE TIME & MOTION -->
   <section class="calc-section">
     <div class="calc-section-inner">
-      <h2 class="calc-section-title">Calculate Planetary Age</h2>
+      <h2 class="calc-section-title">Calculate Planetary Age (Not yet Final)</h2>
       <p class="calc-section-sub">Enter your age in Earth Years to know your age on other planets</p>
       <div class="calc-input-row">
         <input class="calc-input" type="number" id="earthYears" min="0" step="0.1" placeholder="Enter your Earth age..." />
@@ -202,55 +202,55 @@
     {
       name: "Mercury", period: 88, periodYears: 88/365.25, distance: "58 million km", useEarthDays: true,
       description: "The smallest and innermost planet, Mercury has extreme temperature variations and a surface scarred by countless impact craters.",
-      facts: ["Mercury has no atmosphere to retain heat", "A day on Mercury lasts 59 Earth days", "Mercury is only slightly larger than Earth's Moon"],
+      facts: ["Daytime reaches ~430°C, but nights drop to −180°C due to its thin atmosphere.", "Mercury is the fastest planet, orbiting the Sun in just 88 days.", "One day on Mercury lasts 176 Earth days—longer than its year."],
       image: "../planets/mercury.mp4"
     },
     {
       name: "Venus", period: 225, periodYears: 225/365.25, distance: "108 million km", useEarthDays: true,
       description: "Often called Earth's twin, Venus is shrouded in thick toxic clouds and has a runaway greenhouse effect making it the hottest planet.",
-      facts: ["Venus rotates backwards compared to most planets", "Surface temperatures reach 465°C (869°F)", "A day on Venus is longer than its year"],
+      facts: ["Venus is the hottest planet, reaching about 467°C due to its thick atmosphere", "Venus rotates backward and very slowly compared to most planets", "A day on Venus is longer than its year"],
       image: "../planets/venus.mp4"
     },
     {
       name: "Earth (Reference)", period: 365, periodYears: 1.0, distance: "150 million km", useEarthDays: true,
       description: "Our home planet is the only known place in the universe confirmed to host life, with vast oceans and a protective atmosphere.",
-      facts: ["Earth is the densest planet in the solar system", "71% of Earth's surface is covered by water", "Earth has one natural satellite — the Moon"],
+      facts: ["Earth is the only known planet to support life and liquid water", "About 71% of Earth's surface is covered by oceans", "A year lasts 365.25 days, which is why we have leap years"],
       image: "../planets/earth.mp4"
     },
     {
       name: "Mars", period: 687, periodYears: 687/365.25, distance: "228 million km", useEarthDays: true,
       description: "The Red Planet features the solar system's largest volcano and canyon, with evidence suggesting it once had flowing water.",
-      facts: ["Mars has two small moons: Phobos and Deimos", "Olympus Mons on Mars is the tallest volcano in the solar system", "A Martian day is 24 hours and 37 minutes"],
+      facts: ["Mars is known as the Red Planet due to iron rust on its surface", "It has the largest volcano in the Solar System, Olympus Mons", "Mars once had liquid water and may have supported life in the past"],
       image: "../planets/mars.mp4"
     },
     {
       name: "Jupiter", period: 4333, periodYears: 11.86, distance: "778 million km", useEarthDays: false,
       description: "The largest planet in our solar system, Jupiter is a gas giant with a Great Red Spot storm that has raged for centuries.",
-      facts: ["Jupiter has at least 95 known moons", "The Great Red Spot is a storm larger than Earth", "Jupiter's magnetic field is 14 times stronger than Earth's"],
+      facts: ["Jupiter is the largest planet in the Solar System", "It has the shortest day, lasting about 9.9 hours", "The Great Red Spot is a giant storm that has lasted for centuries"],
       image: "../planets/jupiter.mp4"
     },
     {
       name: "Saturn", period: 10759, periodYears: 29.46, distance: "1.43 billion km", useEarthDays: false,
       description: "Famous for its spectacular ring system, Saturn is a gas giant with density low enough to float on water.",
-      facts: ["Saturn's rings are made of ice and rock", "Saturn has 146 known moons, including Titan", "Saturn is the least dense planet in the solar system"],
+      facts: ["Saturn is famous for its bright rings made of ice and rock", "It is the least dense planet and could float in water", "Saturn has over 140 known moons including Titan and Enceladus"],
       image: "../planets/saturn.mp4"
     },
     {
       name: "Uranus", period: 30687, periodYears: 84.02, distance: "2.87 billion km", useEarthDays: false,
       description: "An ice giant that rotates on its side, Uranus has a unique blue-green color from methane in its atmosphere.",
-      facts: ["Uranus rotates at a 98-degree axial tilt", "Uranus has 13 known rings", "It was the first planet discovered with a telescope"],
+      facts: ["Uranus rotates on its side with an extreme 98° tilt, causing unusual seasons", "It is an ice giant made mostly of water, methane, and ammonia ices", "Uranus appears blue-green because methane in its atmosphere absorbs red light"],
       image: "../planets/uranus.mp4"
     },
     {
       name: "Neptune", period: 60190, periodYears: 164.8, distance: "4.5 billion km", useEarthDays: false,
       description: "The windiest planet with the strongest storms in the solar system, Neptune's deep blue atmosphere is constantly in motion.",
-      facts: ["Neptune has winds up to 2,100 km/h (1,300 mph)", "Neptune has 16 known moons, largest is Triton", "Neptune was predicted mathematically before it was observed"],
+      facts: ["Neptune is the windiest planet, with winds reaching over 2,000 km/h", "It was discovered through mathematical prediction before being observed in 1846", "A Neptunian year lasts about 165 Earth years"],
       image: "../planets/neptune.mp4"
     },
     {
       name: "Pluto (Dwarf Planet)", period: 90560, periodYears: 248.00, distance: "5.9 billion km", useEarthDays: false,
       description: "A dwarf planet in the Kuiper Belt, Pluto has a heart-shaped nitrogen ice plain and five known moons, with an eccentric orbit that sometimes brings it closer to the Sun than Neptune.",
-      facts: ["Pluto was reclassified as a dwarf planet in 2006", "A day on Pluto lasts about 6.4 Earth days", "Pluto has five known moons, the largest being Charon"],
+      facts: ["Pluto is a dwarf planet in the Kuiper Belt, reclassified from planet status in 2006", "It has a thin atmosphere that freezes and collapses as it moves away from the Sun", "Pluto and its largest moon Charon form a double system due to their similar sizes"],
       image: "../planets/pluto.mp4"
     },
   ];
