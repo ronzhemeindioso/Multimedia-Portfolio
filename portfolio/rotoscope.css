@@ -28,21 +28,17 @@ body {
 
 /* ── TAG ── */
 .tag {
-  display: inline-block;
+  background: var(--gold);
+  color: #000;
+  -webkit-text-fill-color: #000;
+  border: 1px solid var(--gold);
   padding: 5px 14px;
-  border: 1px solid var(--border);
   border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--gold);
   text-transform: uppercase;
-}
-
-.tag:hover {
-  background: transparent;
-  -webkit-text-fill-color: var(--gold);
-  color: var(--gold);
+  display: inline-block;
 }
 
 /* ── HERO ── */
@@ -196,17 +192,24 @@ body {
   aspect-ratio: 16/9;
   background: rgba(245,184,0,0.04);
   border-bottom: 1px solid var(--border-faint);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.8rem;
   overflow: hidden;
+  position: relative;
 }
 
 .steps-card-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.steps-card-img video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-position: center 45%;
 }
 
 .steps-card-body {
@@ -238,6 +241,48 @@ body {
   line-height: 1.65;
 }
 
+/* ── YOUTUBE THUMBNAIL ── */
+.yt-thumbnail-link {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.yt-thumbnail-link img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.yt-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.yt-thumbnail-link:hover .yt-overlay {
+  opacity: 1;
+}
+
+.yt-icon {
+  width: 60px;
+  height: auto;
+}
+
 /* ── WEEKLY PROGRESS ── */
 .progress-grid {
   display: grid;
@@ -267,10 +312,6 @@ body {
   aspect-ratio: 16/9;
   background: rgba(245,184,0,0.04);
   border-bottom: 1px solid var(--border-faint);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.8rem;
   overflow: hidden;
 }
 
@@ -339,125 +380,6 @@ body {
   transform: translateY(-2px);
 }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 768px) {
-  .project-hero { padding: 110px 6% 56px; }
-  .content-section { padding: 60px 6%; }
-
-  .step-item {
-    grid-template-columns: 44px 1fr;
-    gap: 18px;
-  }
-
-  .step-img { display: none; }
-
-  .progress-grid { grid-template-columns: 1fr; }
-
-  .project-footer {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-  }
-}
-
-.tag {
-  background: var(--gold);
-  color: #000;
-  -webkit-text-fill-color: #000;
-  border: 1px solid var(--gold);
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.steps-card-img {
-  overflow: hidden;
-  position: relative;
-  height: 200px; /* match your card image height */
-}
-
-.steps-card-img video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
-  object-position: center 45%;
-}
-
-.yt-thumbnail-link {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.yt-thumbnail-link img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.yt-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.yt-thumbnail-link:hover .yt-overlay {
-  opacity: 1;
-}
-
-.yt-icon {
-  width: 60px;
-  height: auto;
-}
-
-@media (max-width: 768px) {
-  .steps-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .steps-card {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    border-radius: 12px;
-  }
-
-  .steps-card-img {
-    height: 100%;
-    aspect-ratio: unset;
-    border-bottom: none;
-    border-right: 1px solid var(--border-faint);
-  }
-
-  .yt-thumbnail-link {
-    border-radius: 12px 0 0 12px;
-  }
-
-  .steps-card-body {
-    padding: 14px 16px;
-  }
-}
-
-/* ── RESPONSIVE ── */
 @media (max-width: 768px) {
 
   /* Nav */
@@ -478,7 +400,7 @@ body {
   .project-hero { padding: 110px 6% 56px; }
   .content-section { padding: 60px 6%; }
 
-  /* Steps */
+  /* Steps — horizontal card layout */
   .steps-grid {
     grid-template-columns: 1fr;
   }
@@ -490,8 +412,8 @@ body {
   }
 
   .steps-card-img {
-    height: 100%;
     aspect-ratio: unset;
+    height: 100%;
     border-bottom: none;
     border-right: 1px solid var(--border-faint);
   }
@@ -504,7 +426,7 @@ body {
     padding: 14px 16px;
   }
 
-  /* Progress */
+  /* Progress — horizontal card layout */
   .progress-grid {
     grid-template-columns: 1fr;
   }
@@ -516,8 +438,8 @@ body {
   }
 
   .progress-card-img {
-    height: 100%;
     aspect-ratio: unset;
+    height: 100%;
     border-bottom: none;
     border-right: 1px solid var(--border-faint);
   }
@@ -535,6 +457,7 @@ body {
 }
 
 @media (max-width: 480px) {
+
   .steps-card {
     grid-template-columns: 100px 1fr;
   }
