@@ -676,3 +676,144 @@ video.celestial-img:hover {
     min-height: 220px;
   }
 }
+
+/* ══════════════════════════════
+   RESPONSIVE — 768px and below
+══════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Nav */
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 6%;
+    gap: 8px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Hero */
+  .project-hero {
+    padding: 100px 6% 48px;
+  }
+
+  /* Tags */
+  .project-tags {
+    gap: 8px;
+  }
+
+  /* Sections */
+  .content-section {
+    padding: 60px 6%;
+  }
+
+  /* Overview stats — stack vertically */
+  .overview-stats {
+    flex-direction: column;
+  }
+
+  .stat-divider {
+    width: 60px;
+    height: 1px;
+  }
+
+  /* Details groups */
+  .details-group {
+    padding: 20px 20px;
+  }
+
+  /* Sequence items — hide image column */
+  .sequence-item {
+    grid-template-columns: 48px 1fr;
+    padding: 20px 20px;
+  }
+
+  .sequence-img {
+    display: none;
+  }
+
+  /* Celestial cards — stack vertically */
+  .celestial-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .celestial-info {
+    padding: 28px;
+  }
+
+  .celestial-img-wrap {
+    min-height: 220px;
+  }
+
+  .celestial-img {
+    width: 70%;
+    margin: 0 auto;
+    min-height: unset;
+  }
+
+  /* Footer */
+  .project-footer {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
+
+/* ══════════════════════════════
+   RESPONSIVE — 480px and below
+══════════════════════════════ */
+@media (max-width: 480px) {
+
+  .project-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .project-desc {
+    font-size: 0.95rem;
+  }
+
+  .content-title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .sequence-number {
+    font-size: 1.8rem;
+  }
+
+  .sequence-content h3 {
+    font-size: 0.95rem;
+  }
+
+  .sequence-content p {
+    font-size: 0.85rem;
+  }
+
+  .celestial-info {
+    padding: 20px;
+  }
+
+  .celestial-name {
+    font-size: 1.1rem;
+  }
+
+  .details-group {
+    padding: 16px;
+  }
+
+  .overview-stats {
+    border-radius: 12px;
+  }
+
+  .stat-item {
+    padding: 20px 12px;
+  }
+
+  .highlight-number {
+    font-size: 1.6rem;
+  }
+}
