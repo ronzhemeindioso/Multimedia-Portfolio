@@ -298,13 +298,13 @@
             revStr = '—';
             periodStr = '—';
           } else {
-            var inputYears = (earthYears !== null && !isNaN(earthYears)) ? earthYears : null;
-            var planetAge = inputYears !== null ? (inputYears / p.periodYears).toFixed(2) : '—';
-            ageStr = inputYears !== null ? escapeHTML(planetAge) + ' years' : '—';
+            var inputYears = (earthYears !== null && !isNaN(earthYears)) ? earthYears : null;  // Line 91 fix
+            var planetAge = inputYears !== null ? (inputYears / p.periodYears).toFixed(2) : '—';  // Line 101 fix
+            ageStr = inputYears !== null ? escapeHTML(planetAge) + ' years' : '—';  // Line 105 fix
             revStr = inputYears !== null ? escapeHTML(planetAge) : '—';
-            periodStr = p.useEarthDays
-              ? escapeHTML(String(p.period)) + ' Earth days'
-              : escapeHTML(String(p.periodYears)) + ' Earth years';
+            periodStr = p.useEarthDays ?  // Line 106 fix
+              escapeHTML(String(p.period)) + ' Earth days' :  // Line 107 fix
+              escapeHTML(String(p.periodYears)) + ' Earth years';
           }
 
           var factsHTML = p.facts.map(function (f) {
@@ -312,31 +312,31 @@
           }).join('');
 
           var isVideo = /\.(mp4|webm)$/i.test(p.image);
-          var mediaTag = isVideo
-            ? '<video class="celestial-img" src="' + escapeHTML(p.image) + '" autoplay loop muted playsinline style="pointer-events:none;" aria-label="' + escapeHTML(p.name) + ' animation" onerror="this.style.display=\'none\'"></video>'
-            : '<img src="' + escapeHTML(p.image) + '" alt="' + escapeHTML(p.name) + '" class="celestial-img" style="pointer-events:none;" onerror="this.style.display=\'none\'" />';
+          var mediaTag = isVideo ?
+            '<video class="celestial-img" src="' + escapeHTML(p.image) + '" autoplay loop muted playsinline style="pointer-events:none;" aria-label="' + escapeHTML(p.name) + ' animation" onerror="this.style.display=\'none\'"></video>' :
+            '<img src="' + escapeHTML(p.image) + '" alt="' + escapeHTML(p.name) + '" class="celestial-img" style="pointer-events:none;" onerror="this.style.display=\'none\'" />';
 
-          var statsExtra = !p.isSun
-            ? '<div class="celestial-stat-row"><span class="celestial-stat-label">Revolutions:</span><span class="celestial-stat-value">' + revStr + '</span></div>'
-            + '<div class="celestial-stat-row"><span class="celestial-stat-label">Orbital Period:</span><span class="celestial-stat-value">' + periodStr + '</span></div>'
-            + '<div class="celestial-stat-row"><span class="celestial-stat-label">Distance from Sun:</span><span class="celestial-stat-value">' + escapeHTML(p.distance) + '</span></div>'
-            : '';
+          var statsExtra = !p.isSun ?
+            '<div class="celestial-stat-row"><span class="celestial-stat-label">Revolutions:</span><span class="celestial-stat-value">' + revStr + '</span></div>' +
+            '<div class="celestial-stat-row"><span class="celestial-stat-label">Orbital Period:</span><span class="celestial-stat-value">' + periodStr + '</span></div>' +
+            '<div class="celestial-stat-row"><span class="celestial-stat-label">Distance from Sun:</span><span class="celestial-stat-value">' + escapeHTML(p.distance) + '</span></div>' :
+            '';
 
-          return '<div class="celestial-card" role="listitem">'
-            + '<div class="celestial-info">'
-            + '<h3 class="celestial-name">' + escapeHTML(p.name) + '</h3>'
-            + '<p class="celestial-desc">' + escapeHTML(p.description) + '</p>'
-            + '<div class="celestial-stats">'
-            + '<div class="celestial-stat-row"><span class="celestial-stat-label">Age on this planet:</span><span class="celestial-stat-value age-value">' + ageStr + '</span></div>'
-            + statsExtra
-            + '</div>'
-            + '<div class="celestial-facts">'
-            + '<span class="celestial-facts-title">Fun Facts</span>'
-            + '<ul class="celestial-facts-list">' + factsHTML + '</ul>'
-            + '</div>'
-            + '</div>'
-            + '<div class="celestial-img-wrap">' + mediaTag + '</div>'
-            + '</div>';
+          return '<div class="celestial-card" role="listitem">' +
+            '<div class="celestial-info">' +
+            '<h3 class="celestial-name">' + escapeHTML(p.name) + '</h3>' +
+            '<p class="celestial-desc">' + escapeHTML(p.description) + '</p>' +
+            '<div class="celestial-stats">' +
+            '<div class="celestial-stat-row"><span class="celestial-stat-label">Age on this planet:</span><span class="celestial-stat-value age-value">' + ageStr + '</span></div>' +
+            statsExtra +
+            '</div>' +
+            '<div class="celestial-facts">' +
+            '<span class="celestial-facts-title">Fun Facts</span>' +
+            '<ul class="celestial-facts-list">' + factsHTML + '</ul>' +
+            '</div>' +
+            '</div>' +
+            '<div class="celestial-img-wrap">' + mediaTag + '</div>' +
+            '</div>';
         }).join('');
       }
 
