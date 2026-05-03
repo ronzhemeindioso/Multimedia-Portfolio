@@ -449,9 +449,11 @@
 .celestial-card {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 32px;              /* adds space between the two columns */
+  gap: 32px;
   position: relative;
   text-align: left;
+  align-items: stretch;   /* ← add this */
+  min-height: 480px;      /* ← add this */
 }
 
 .celestial-info {
@@ -464,6 +466,8 @@
   background: #0e0b00;
   position: relative;
   z-index: 1;
+  height: 100%;           /* ← add this */
+  box-sizing: border-box; /* ← add this */
 }
 
 .celestial-name {
@@ -564,13 +568,13 @@
 
 .celestial-img-wrap {
   width: 100%;
-  height: 100%;
-  min-height: 400px;      /* increased from 340px */
+  height: 100%;           /* ← change from min-height: 400px */
+  min-height: 480px;      /* ← match the card min-height */
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 20px;    /* match the info card's border-radius */
+  border-radius: 20px;
   background: transparent;
 }
 
