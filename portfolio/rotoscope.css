@@ -4,22 +4,10 @@
   padding: 0;
 }
 
-:root {
-  --gold: #f5b800;
-  --orange: #ff6b00;
-  --bg: #0a0800;
-  --bg2: #0e0b00;
-  --bg3: #161106;
-  --text-dim: #bbb;
-  --text-muted: #888;
-  --border: rgba(245,184,0,0.2);
-  --border-faint: rgba(245,184,0,0.08);
-}
-
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
+  background: #0a0800;
   color: #fff;
   font-family: 'Source Sans 3', sans-serif;
   font-weight: 300;
@@ -73,7 +61,6 @@ body {
   font-size: clamp(2.8rem, 7vw, 5.5rem);
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   line-height: 1.05;
@@ -112,7 +99,6 @@ body {
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   margin-bottom: 40px;
@@ -260,13 +246,13 @@ body {
 .yt-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.45);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: white;
+  color: #fff;
   font-size: 1rem;
   font-weight: 600;
   opacity: 0;

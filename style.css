@@ -64,7 +64,6 @@ nav {
 }
 
 /* ── HERO ── */
-/* ── HERO ── */
 .hero {
   height: 100vh;
   display: flex;
@@ -106,9 +105,8 @@ nav {
   font-size: clamp(3rem, 8vw, 6rem);
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   line-height: 1.1;
 }
 
@@ -139,7 +137,7 @@ nav {
   background: #ffffff;
   color: #000;
   transform: translateY(-3px);
-  box-shadow: 0 0 24px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 24px rgba(255,255,255,0.3);
 }
 
 /* ── SCROLL INDICATOR ── */
@@ -176,9 +174,8 @@ nav {
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   text-align: center;
 }
 
@@ -209,7 +206,7 @@ nav {
 
 .card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 0 32px rgba(245, 184, 0, 0.3);
+  box-shadow: 0 0 32px rgba(245,184,0,0.3);
   border-color: #ff6b00;
 }
 
@@ -314,7 +311,6 @@ nav {
 
 @media (max-width: 768px) {
 
-  /* Fix nav wrapping and overlap */
   nav {
     flex-direction: column;
     align-items: flex-start;
@@ -328,12 +324,10 @@ nav {
     gap: 12px;
   }
 
-  /* Push hero down more to account for taller nav on mobile */
   .project-hero {
     padding: 140px 6% 48px;
   }
 
-  /* Celestial image fix */
   .celestial-img-wrap {
     min-height: 260px;
     height: 260px;
