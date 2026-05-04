@@ -60,11 +60,17 @@ body {
   font-family: 'Playfair Display', serif;
   font-size: clamp(2.8rem, 7vw, 5.5rem);
   font-weight: 700;
-  background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  background-clip: text;
-  color: transparent;
+  color: #f5b800;
   line-height: 1.05;
   margin-bottom: 18px;
+}
+
+@supports (background-clip: text) {
+  .project-title {
+    background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 .project-desc {
@@ -98,12 +104,18 @@ body {
   font-family: 'Playfair Display', serif;
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   font-weight: 700;
-  background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  background-clip: text;
-  color: transparent;
+  color: #f5b800;
   margin-bottom: 40px;
   width: 100%;
   text-align: center;
+}
+
+@supports (background-clip: text) {
+  .content-title {
+    background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 .section-sub {
