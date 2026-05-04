@@ -28,9 +28,9 @@ body {
 
 /* ── TAG ── */
 .tag {
-  background: var(--gold);
+  background: #f5b800;
   color: #000;
-  border: 1px solid var(--gold);
+  border: 1px solid #f5b800;
   padding: 5px 14px;
   border-radius: 999px;
   font-size: 0.78rem;
@@ -64,7 +64,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: #f5b800;
   margin-bottom: 12px;
 }
 
@@ -100,7 +100,7 @@ body {
 /* ── CONTENT SECTION ── */
 .content-section {
   padding: 80px 10%;
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid rgba(245,184,0,0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -122,7 +122,7 @@ body {
 
 .section-sub {
   font-size: 1rem;
-  color: var(--text-muted);
+  color: #888;
   margin-top: -28px;
   margin-bottom: 40px;
   font-weight: 300;
@@ -155,7 +155,7 @@ body {
 }
 
 .video-caption code {
-  color: var(--gold);
+  color: #f5b800;
   background: rgba(245,184,0,0.1);
   padding: 2px 6px;
   border-radius: 4px;
@@ -172,8 +172,8 @@ body {
 }
 
 .steps-card {
-  background: var(--bg2);
-  border: 1.5px solid var(--border);
+  background: #0e0b00;
+  border: 1.5px solid rgba(245,184,0,0.2);
   border-radius: 16px;
   overflow: hidden;
   transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
@@ -181,7 +181,7 @@ body {
 }
 
 .steps-card:hover {
-  border-color: var(--gold);
+  border-color: #f5b800;
   transform: translateY(-5px);
   box-shadow: 0 12px 32px rgba(245,184,0,0.08);
 }
@@ -190,7 +190,7 @@ body {
   width: 100%;
   aspect-ratio: 16/9;
   background: rgba(245,184,0,0.04);
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid rgba(245,184,0,0.08);
   overflow: hidden;
   position: relative;
 }
@@ -223,7 +223,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: #f5b800;
 }
 
 .steps-title {
@@ -236,7 +236,7 @@ body {
 .steps-desc {
   font-size: 0.88rem;
   font-weight: 300;
-  color: var(--text-muted);
+  color: #888;
   line-height: 1.65;
 }
 
@@ -292,8 +292,8 @@ body {
 }
 
 .progress-card {
-  background: var(--bg2);
-  border: 1.5px solid var(--border);
+  background: #0e0b00;
+  border: 1.5px solid rgba(245,184,0,0.2);
   border-radius: 16px;
   overflow: hidden;
   transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
@@ -301,7 +301,7 @@ body {
 }
 
 .progress-card:hover {
-  border-color: var(--gold);
+  border-color: #f5b800;
   transform: translateY(-5px);
   box-shadow: 0 12px 32px rgba(245,184,0,0.08);
 }
@@ -310,7 +310,7 @@ body {
   width: 100%;
   aspect-ratio: 16/9;
   background: rgba(245,184,0,0.04);
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid rgba(245,184,0,0.08);
   overflow: hidden;
 }
 
@@ -332,7 +332,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: #f5b800;
 }
 
 .progress-title {
@@ -345,7 +345,7 @@ body {
 .progress-desc {
   font-size: 0.88rem;
   font-weight: 300;
-  color: var(--text-muted);
+  color: #888;
   line-height: 1.65;
 }
 
@@ -363,9 +363,9 @@ body {
 .back-btn {
   display: inline-block;
   padding: 12px 28px;
-  border: 1.5px solid var(--gold);
+  border: 1.5px solid #f5b800;
   border-radius: 999px;
-  color: var(--gold);
+  color: #f5b800;
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 700;
@@ -374,7 +374,7 @@ body {
 }
 
 .back-btn:hover {
-  background: var(--gold);
+  background: #f5b800;
   color: #000;
   transform: translateY(-2px);
 }
@@ -411,7 +411,7 @@ body {
     aspect-ratio: unset;
     height: 100%;
     border-bottom: none;
-    border-right: 1px solid var(--border-faint);
+    border-right: 1px solid rgba(245,184,0,0.08);
   }
 
   .yt-thumbnail-link {
@@ -436,7 +436,7 @@ body {
     aspect-ratio: unset;
     height: 100%;
     border-bottom: none;
-    border-right: 1px solid var(--border-faint);
+    border-right: 1px solid rgba(245,184,0,0.08);
   }
 
   .progress-card-body {
