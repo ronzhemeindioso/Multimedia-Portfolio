@@ -65,14 +65,6 @@ body {
   margin-bottom: 18px;
 }
 
-@supports (background-clip: text) {
-  .project-title {
-    background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-    background-clip: text;
-    color: transparent;
-  }
-}
-
 .project-desc {
   font-size: 1.1rem;
   font-weight: 300;
@@ -108,14 +100,6 @@ body {
   margin-bottom: 40px;
   width: 100%;
   text-align: center;
-}
-
-@supports (background-clip: text) {
-  .content-title {
-    background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-    background-clip: text;
-    color: transparent;
-  }
 }
 
 .section-sub {

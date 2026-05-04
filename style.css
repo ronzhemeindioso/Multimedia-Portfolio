@@ -108,14 +108,6 @@ nav {
   line-height: 1.1;
 }
 
-@supports (background-clip: text) {
-  .hero-title {
-    background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-    background-clip: text;
-    color: transparent;
-  }
-}
-
 .hero-sub {
   font-size: clamp(1.05rem, 2vw, 1.2rem);
   font-weight: 300;
@@ -181,14 +173,6 @@ nav {
   font-weight: 700;
   color: #f5b800;
   text-align: center;
-}
-
-@supports (background-clip: text) {
-  .section-title {
-    background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-    background-clip: text;
-    color: transparent;
-  }
 }
 
 /* ── CARDS GRID ── */
