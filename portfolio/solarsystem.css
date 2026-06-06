@@ -93,7 +93,7 @@
 .video-wrapper {
   position: relative;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px;
   aspect-ratio: 16 / 9;
   border-radius: 16px;
   overflow: hidden;
@@ -443,17 +443,16 @@
   flex-direction: column;
   gap: 64px;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1600px; /* increased from 1100px to fill side space */
 }
 
 .celestial-card {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.4fr; /* image side gets more room */
   gap: 32px;
   position: relative;
   text-align: left;
-  align-items: stretch;   /* ← add this */
-  min-height: 480px;      /* ← add this */
+  align-items: stretch; /* both columns stretch to same height */
 }
 
 .celestial-info {
@@ -466,8 +465,7 @@
   background: #0e0b00;
   position: relative;
   z-index: 1;
-  height: 100%;           /* ← add this */
-  box-sizing: border-box; /* ← add this */
+  box-sizing: border-box;
 }
 
 .celestial-name {
@@ -566,24 +564,26 @@
   color: #f5b800;
 }
 
+/* ── PLANET IMAGE WRAP ── */
 .celestial-img-wrap {
   width: 100%;
-  height: 100%;           /* ← change from min-height: 400px */
-  min-height: 480px;      /* ← match the card min-height */
+  height: 100%;
+  min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border-radius: 20px;
   background: transparent;
+  position: sticky;
+  top: 100px;
 }
 
 .celestial-img {
   width: 100%;
   height: 100%;
-  min-height: 400px;      /* increased from 340px */
-  object-fit: cover;      /* changed back to cover to fill the box */
-  border-radius: 20px;    /* match the info card's border-radius */
+  object-fit: cover;
+  border-radius: 20px;
   display: block;
   pointer-events: none;
   background: transparent;
@@ -628,65 +628,9 @@ video.celestial-img:hover {
   transform: translateY(-2px);
 }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 768px) {
-  .project-hero {
-    padding: 100px 6% 48px;
-  }
-
-  .content-section {
-    padding: 60px 6%;
-  }
-
-  .overview-stats {
-    flex-direction: column;
-  }
-
-  .stat-divider {
-    width: 60px;
-    height: 1px;
-  }
-
-  .sequence-item {
-    grid-template-columns: 48px 1fr;
-    text-align: left;
-  }
-
-  .sequence-img {
-    display: none;
-  }
-
-  .project-footer {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-  }
-
-  .celestial-card {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .celestial-info {
-    padding: 28px;
-  }
-
-  .celestial-img {
-    width: 70%;
-    margin: 0 auto;
-  }
-
-  .celestial-img-wrap {
-    min-height: 220px;
-  }
-}
-
-/* ══════════════════════════════
-   RESPONSIVE — 768px and below
-══════════════════════════════ */
+/* ── RESPONSIVE — 768px and below ── */
 @media (max-width: 768px) {
 
-  /* Nav */
   nav {
     flex-direction: column;
     align-items: flex-start;
@@ -700,22 +644,18 @@ video.celestial-img:hover {
     gap: 12px;
   }
 
-  /* Hero */
   .project-hero {
     padding: 100px 6% 48px;
   }
 
-  /* Tags */
   .project-tags {
     gap: 8px;
   }
 
-  /* Sections */
   .content-section {
     padding: 60px 6%;
   }
 
-  /* Overview stats — stack vertically */
   .overview-stats {
     flex-direction: column;
   }
@@ -725,12 +665,10 @@ video.celestial-img:hover {
     height: 1px;
   }
 
-  /* Details groups */
   .details-group {
     padding: 20px 20px;
   }
 
-  /* Sequence items — hide image column */
   .sequence-item {
     grid-template-columns: 48px 1fr;
     padding: 20px 20px;
@@ -740,7 +678,6 @@ video.celestial-img:hover {
     display: none;
   }
 
-  /* Celestial cards — stack vertically */
   .celestial-card {
     grid-template-columns: 1fr;
     gap: 24px;
@@ -751,16 +688,19 @@ video.celestial-img:hover {
   }
 
   .celestial-img-wrap {
-    min-height: 220px;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    min-height: unset;
+    width: 85%;
+    margin: 0 auto;
+    position: static;
   }
 
   .celestial-img {
-    width: 70%;
-    margin: 0 auto;
+    width: 100%;
     min-height: unset;
   }
 
-  /* Footer */
   .project-footer {
     flex-direction: column;
     gap: 16px;
@@ -768,9 +708,7 @@ video.celestial-img:hover {
   }
 }
 
-/* ══════════════════════════════
-   RESPONSIVE — 480px and below
-══════════════════════════════ */
+/* ── RESPONSIVE — 480px and below ── */
 @media (max-width: 480px) {
 
   .project-title {
@@ -820,6 +758,10 @@ video.celestial-img:hover {
   .highlight-number {
     font-size: 1.6rem;
   }
+
+  .celestial-img-wrap {
+    width: 100%;
+  }
 }
 
 .celestial-details-links {
@@ -850,8 +792,4 @@ video.celestial-img:hover {
   box-shadow: 0 6px 20px rgba(245, 184, 0, 0.4);
   text-decoration: none;
   opacity: 1;
-}
-
-.celestial-info {
-  min-height: 480px;
 }
