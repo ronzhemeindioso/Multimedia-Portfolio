@@ -68,8 +68,8 @@ import bpy
 import os
 import math
 
-TEXTURE_PATH = "add texture path here (e.g., C:/Users/YourName/Downloads/mars_texture.jpg)"
-OUTPUT_PATH  = "add output path here (e.g., C:/Users/YourName/Videos/jupiter_animation.mp4)"
+TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/8k_jupiter.jpg"
+OUTPUT_PATH  = "C:/Users/Ronzhem Dioso/Downloads/jupiter_render.mp4"
 
 AXIAL_TILT_DEGREES = 3.13
 
@@ -175,8 +175,9 @@ ramp_color.color_ramp.elements[0].position = 0.15
 ramp_color.color_ramp.elements[0].color    = (0.88, 0.75, 0.55, 1)
 ramp_color.color_ramp.elements[1].position = 0.85
 ramp_color.color_ramp.elements[1].color    = (0.52, 0.28, 0.12, 1)
-ramp_color.color_ramp.elements.new(0.50)
-ramp_color.color_ramp.elements[1].color    = (0.78, 0.45, 0.22, 1)
+# FIX 2: Capture the new element directly to avoid index shifting bug
+mid = ramp_color.color_ramp.elements.new(0.50)
+mid.color = (0.78, 0.45, 0.22, 1)
 links.new(mix_noise.outputs["Color"], ramp_color.inputs["Fac"])
 
 mix_tex_bands = nodes.new("ShaderNodeMixRGB")
@@ -236,7 +237,7 @@ rim.data.size          = 10.0
 rim.data.color         = (0.95, 0.80, 0.55)
 rim.rotation_euler     = (1.57, 0, 1.57)
 
-HDR_PATH = "add HDR image path here (e.g., C:/Users/YourName/Downloads/space_hdr.hdr)"
+HDR_PATH = "C:/Users/Ronzhem Dioso/Downloads/hdr.png"
 
 world = bpy.data.worlds["World"]
 world.use_nodes = True
@@ -296,13 +297,19 @@ bpy.ops.object.camera_add(location=(0, -12, 0))
 cam = bpy.context.active_object
 cam.name = "Camera"
 cam.rotation_euler = (1.5708, 0.0, 0.0)
-cam.data.lens = 50
+cam.data.lens = 55
 
 bpy.context.scene.camera = cam
 
 scene = bpy.context.scene
 scene.render.engine        = 'CYCLES'
-scene.cycles.device        = 'GPU'
+
+# FIX 3: GPU with fallback to CPU if no compatible GPU is found
+prefs = bpy.context.preferences.addons['cycles'].preferences
+prefs.compute_device_type = 'OPTIX'  # Change to 'CUDA' or 'METAL' if needed
+prefs.get_devices()
+scene.cycles.device = 'GPU' if any(d.use for d in prefs.devices) else 'CPU'
+
 scene.cycles.samples       = 128
 scene.cycles.use_denoising = True
 scene.cycles.denoiser      = 'OPENIMAGEDENOISE'
@@ -355,6 +362,8 @@ for frame_num in range(scene.frame_start, scene.frame_end + 1):
     jupiter.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
 
     jupiter.keyframe_insert(data_path="rotation_euler", index=0)
+    # FIX 1: Also keyframe Y axis to lock it at 0 throughout the animation
+    jupiter.keyframe_insert(data_path="rotation_euler", index=1)
     jupiter.keyframe_insert(data_path="rotation_euler", index=2)
 
 for fc in jupiter.animation_data.action.fcurves:
