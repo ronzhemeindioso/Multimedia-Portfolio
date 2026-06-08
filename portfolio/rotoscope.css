@@ -139,14 +139,6 @@ body {
   line-height: 1.6;
 }
 
-.video-caption code {
-  color: #f5b800;
-  background: rgba(245,184,0,0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.82rem;
-}
-
 /* ── STEP-BY-STEP ── */
 .steps-grid {
   display: grid;
@@ -190,17 +182,6 @@ body {
   display: block;
 }
 
-.steps-card-img video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
-  object-position: center 45%;
-}
-
-/* Iframes inside card images always fill the container */
 .steps-card-img iframe {
   position: absolute;
   top: 0;
@@ -241,48 +222,6 @@ body {
   line-height: 1.65;
 }
 
-/* ── YOUTUBE THUMBNAIL ── */
-.yt-thumbnail-link {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.yt-thumbnail-link img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.yt-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 600;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.yt-thumbnail-link:hover .yt-overlay {
-  opacity: 1;
-}
-
-.yt-icon {
-  width: 60px;
-  height: auto;
-}
-
 /* ── WEEKLY PROGRESS ── */
 .progress-grid {
   display: grid;
@@ -309,7 +248,6 @@ body {
   box-shadow: 0 12px 32px rgba(245,184,0,0.08);
 }
 
-/* Progress card image always maintains 16:9 with absolute iframe inside */
 .progress-card-img {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -338,11 +276,10 @@ body {
 }
 
 .progress-card-body {
-  padding: 22px 24px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex: 1;
+  gap: 6px;
 }
 
 .progress-week-label {
@@ -398,24 +335,17 @@ body {
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — 1024px (tablets landscape)
+   RESPONSIVE — 1024px
    ══════════════════════════════════════════ */
 @media (max-width: 1024px) {
-  .content-section {
-    padding: 64px 7%;
-  }
-
-  .steps-grid,
-  .progress-grid {
-    max-width: 100%;
-  }
+  .content-section { padding: 64px 7%; }
+  .steps-grid, .progress-grid { max-width: 100%; }
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — 768px (tablets portrait)
+   RESPONSIVE — 768px
    ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Nav */
   nav {
     flex-direction: column;
     align-items: flex-start;
@@ -429,207 +359,19 @@ body {
     gap: 12px;
   }
 
-  /* Hero */
   .project-hero {
     padding: 110px 6% 56px;
     min-height: 40vh;
   }
 
-  /* Content */
-  .content-section {
-    padding: 52px 6%;
-  }
+  .content-section { padding: 52px 6%; }
 
-  /* Steps grid: single column, horizontal card layout */
-  .steps-grid {
-    grid-template-columns: 1fr;
-  }
+  /* Steps: single column, keep VERTICAL so iframes get proper height */
+  .steps-grid { grid-template-columns: 1fr; }
 
   .steps-card {
-    /* Switch to horizontal row layout */
-    flex-direction: row;
-    align-items: stretch;
-    border-radius: 12px;
-    min-height: 110px;
-  }
-
-  .steps-card-img {
-    /* Fixed width thumbnail on left; use padding-top trick for 16:9 within fixed width */
-    width: 140px;
-    min-width: 140px;
-    aspect-ratio: unset;
-    height: auto;
-    border-bottom: none;
-    border-right: 1px solid rgba(245,184,0,0.08);
-    border-radius: 0;
-    /* Keep iframe absolutely positioned — needs explicit height context */
-    position: relative;
-    align-self: stretch;
-  }
-
-  /* Iframes in horizontal layout fill the fixed-width column fully */
-  .steps-card-img iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-
-  .yt-thumbnail-link {
-    border-radius: 12px 0 0 12px;
-  }
-
-  .steps-card-body {
-    padding: 14px 16px;
-    justify-content: center;
-  }
-
-  /* Progress grid: single column, but keep vertical card (iframes look better full-width) */
-  .progress-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .progress-card {
     flex-direction: column;
     border-radius: 12px;
-  }
-
-  /* Progress card image stays 16:9 vertical (full-width iframe) */
-  .progress-card-img {
-    aspect-ratio: 16 / 9;
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid rgba(245,184,0,0.08);
-    height: auto;
-  }
-
-  .progress-card-body {
-    padding: 14px 16px;
-  }
-
-  /* Footer */
-  .project-footer {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-    padding: 36px 6%;
-  }
-}
-
-/* ══════════════════════════════════════════
-   RESPONSIVE — 600px (large phones)
-   ══════════════════════════════════════════ */
-@media (max-width: 600px) {
-  .steps-card-img {
-    width: 120px;
-    min-width: 120px;
-  }
-}
-
-/* ══════════════════════════════════════════
-   RESPONSIVE — 480px (phones)
-   ══════════════════════════════════════════ */
-@media (max-width: 480px) {
-  .project-hero {
-    padding: 90px 5% 40px;
-    min-height: 35vh;
-  }
-
-  .project-title {
-    font-size: clamp(2rem, 8vw, 3rem);
-  }
-
-  .project-desc {
-    font-size: 0.95rem;
-  }
-
-  .project-tags {
-    gap: 6px;
-  }
-
-  .tag {
-    font-size: 0.72rem;
-    padding: 4px 10px;
-  }
-
-  .content-section {
-    padding: 40px 5%;
-  }
-
-  .content-title {
-    font-size: clamp(1.5rem, 6vw, 2rem);
-    margin-bottom: 28px;
-  }
-
-  .section-sub {
-    margin-top: -18px;
-    font-size: 0.9rem;
-  }
-
-  /* Steps card: slightly narrower thumbnail */
-  .steps-card-img {
-    width: 100px;
-    min-width: 100px;
-  }
-
-  .steps-card-body {
-    padding: 10px 12px;
-  }
-
-  .steps-title {
-    font-size: 0.9rem;
-  }
-
-  .steps-desc {
-    font-size: 0.8rem;
-  }
-
-  .steps-label {
-    font-size: 0.68rem;
-  }
-
-  /* Progress card body */
-  .progress-card-body {
-    padding: 10px 12px;
-  }
-
-  .progress-title {
-    font-size: 0.9rem;
-  }
-
-  .progress-desc {
-    font-size: 0.8rem;
-  }
-
-  /* Footer */
-  .project-footer {
-    padding: 28px 5%;
-    font-size: 0.82rem;
-  }
-
-  .back-btn {
-    font-size: 0.88rem;
-    padding: 10px 22px;
-  }
-}
-
-/* ══════════════════════════════════════════
-   RESPONSIVE — 360px (small phones)
-   ══════════════════════════════════════════ */
-@media (max-width: 360px) {
-  .project-hero {
-    padding: 80px 4% 32px;
-  }
-
-  .content-section {
-    padding: 32px 4%;
-  }
-
-  /* At very small sizes, switch steps cards back to vertical */
-  .steps-card {
-    flex-direction: column;
     min-height: unset;
   }
 
@@ -644,10 +386,90 @@ body {
   }
 
   .steps-card-body {
-    padding: 14px 14px;
+    padding: 16px 18px;
+    justify-content: flex-start;
   }
 
-  .nav-links a {
-    font-size: 0.85rem;
+  /* Progress: single column, vertical */
+  .progress-grid { grid-template-columns: 1fr; }
+
+  .progress-card {
+    flex-direction: column;
+    border-radius: 12px;
   }
+
+  .progress-card-img {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: auto;
+  }
+
+  .progress-card-body { padding: 14px 16px; }
+
+  .project-footer {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    padding: 36px 6%;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — 480px
+   ══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .project-hero {
+    padding: 90px 5% 40px;
+    min-height: 35vh;
+  }
+
+  .project-title { font-size: clamp(2rem, 8vw, 3rem); }
+  .project-desc { font-size: 0.95rem; }
+  .project-tags { gap: 6px; }
+
+  .tag {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+
+  .content-section { padding: 40px 5%; }
+
+  .content-title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    margin-bottom: 28px;
+  }
+
+  .section-sub {
+    margin-top: -18px;
+    font-size: 0.9rem;
+  }
+
+  .steps-card-body { padding: 12px 14px; }
+  .steps-title { font-size: 0.9rem; }
+  .steps-desc { font-size: 0.8rem; }
+  .steps-label { font-size: 0.68rem; }
+
+  .progress-card-body { padding: 12px 14px; }
+  .progress-title { font-size: 0.9rem; }
+  .progress-desc { font-size: 0.8rem; }
+
+  .project-footer {
+    padding: 28px 5%;
+    font-size: 0.82rem;
+  }
+
+  .back-btn {
+    font-size: 0.88rem;
+    padding: 10px 22px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — 360px
+   ══════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .project-hero { padding: 80px 4% 32px; }
+  .content-section { padding: 32px 4%; }
+  .steps-card-body { padding: 12px 12px; }
+  .nav-links a { font-size: 0.85rem; }
 }
