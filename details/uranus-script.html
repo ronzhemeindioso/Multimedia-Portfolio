@@ -65,7 +65,384 @@
             </div>
             <pre class="script-code" id="scriptCode"><code>
 
-codee hereee
+import bpy
+import os
+import math
+import bmesh
+import mathutils
+
+TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/2k_uranus.jpg"
+OUTPUT_PATH  = "C:/Users/Ronzhem Dioso/Downloads/uranus_render.mp4"
+HDR_PATH     = "C:/Users/Ronzhem Dioso/Downloads/hdr.png"
+
+AXIAL_TILT_DEGREES = 97.77
+TOTAL_FRAMES       = 173
+FPS                = 24
+
+# ── CLEAR SCENE ───────────────────────────────────────────────────────────────
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete(use_global=False)
+for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
+for block in bpy.data.materials: bpy.data.materials.remove(block)
+for block in bpy.data.images:    bpy.data.images.remove(block)
+for block in bpy.data.lights:    bpy.data.lights.remove(block)
+
+# ── TILT EMPTY (parent that holds the axial tilt) ─────────────────────────────
+tilt_empty = bpy.data.objects.new("Uranus_Tilt", None)
+bpy.context.collection.objects.link(tilt_empty)
+tilt_empty.rotation_euler = (math.radians(AXIAL_TILT_DEGREES), 0.0, 0.0)
+
+# ── URANUS SPHERE ─────────────────────────────────────────────────────────────
+bpy.ops.mesh.primitive_uv_sphere_add(
+    segments=128, ring_count=64, radius=2.0, location=(0, 0, 0)
+)
+uranus = bpy.context.active_object
+uranus.name = "Uranus"
+uranus.scale = (1.0, 1.0, 0.977)
+bpy.ops.object.transform_apply(scale=True)
+bpy.ops.object.shade_smooth()
+
+bpy.ops.object.modifier_add(type='SMOOTH')
+uranus.modifiers["Smooth"].factor     = 1.0
+uranus.modifiers["Smooth"].iterations = 3
+
+# Parent Uranus to the tilt empty
+uranus.parent = tilt_empty
+
+# ── MATERIAL ──────────────────────────────────────────────────────────────────
+mat = bpy.data.materials.new(name="Uranus_Material")
+mat.use_nodes = True
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+nodes.clear()
+
+output = nodes.new("ShaderNodeOutputMaterial")
+output.location = (1100, 0)
+
+bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+bsdf.location = (750, 0)
+bsdf.inputs["Base Color"].default_value = (0.05, 0.80, 0.90, 1.0)
+bsdf.inputs["Roughness"].default_value  = 0.25
+bsdf.inputs["Metallic"].default_value   = 0.0
+bsdf.inputs["Specular IOR Level"].default_value = 0.30
+links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+
+tex_coord = nodes.new("ShaderNodeTexCoord")
+tex_coord.location = (-900, 0)
+mapping = nodes.new("ShaderNodeMapping")
+mapping.location = (-700, 0)
+links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
+
+img_node = nodes.new("ShaderNodeTexImage")
+img_node.location      = (-400, 200)
+img_node.interpolation = 'Linear'
+
+abs_path = bpy.path.abspath(TEXTURE_PATH)
+if os.path.exists(abs_path):
+    img = bpy.data.images.load(abs_path)
+    img_node.image = img
+    print(f"[Uranus] Texture loaded: {abs_path}")
+else:
+    print(f"[Uranus] WARNING – texture not found at: {abs_path}")
+
+links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
+
+# Subtle atmospheric banding
+band_noise = nodes.new("ShaderNodeTexNoise")
+band_noise.location = (-400, -200)
+band_noise.inputs["Scale"].default_value      = 2.0
+band_noise.inputs["Detail"].default_value     = 4.0
+band_noise.inputs["Roughness"].default_value  = 0.25
+band_noise.inputs["Distortion"].default_value = 0.1
+links.new(mapping.outputs["Vector"], band_noise.inputs["Vector"])
+
+ramp_color = nodes.new("ShaderNodeValToRGB")
+ramp_color.location = (0, -150)
+ramp_color.color_ramp.elements[0].position = 0.4
+ramp_color.color_ramp.elements[0].color    = (0.08, 0.82, 0.92, 1)
+ramp_color.color_ramp.elements[1].position = 0.6
+ramp_color.color_ramp.elements[1].color    = (0.04, 0.65, 0.80, 1)
+links.new(band_noise.outputs["Fac"], ramp_color.inputs["Fac"])
+
+mix_tex = nodes.new("ShaderNodeMixRGB")
+mix_tex.location   = (520, 100)
+mix_tex.blend_type = "MIX"
+mix_tex.inputs["Fac"].default_value = 0.30
+links.new(img_node.outputs["Color"],   mix_tex.inputs["Color1"])
+links.new(ramp_color.outputs["Color"], mix_tex.inputs["Color2"])
+links.new(mix_tex.outputs["Color"],    bsdf.inputs["Base Color"])
+
+# Limb glow
+fresnel = nodes.new("ShaderNodeFresnel")
+fresnel.location = (200, 350)
+fresnel.inputs["IOR"].default_value = 1.10
+
+emission = nodes.new("ShaderNodeEmission")
+emission.location = (400, 350)
+emission.inputs["Color"].default_value    = (0.05, 0.85, 0.95, 1.0)
+emission.inputs["Strength"].default_value = 0.18
+
+mix_atmo = nodes.new("ShaderNodeMixShader")
+mix_atmo.location = (700, 200)
+links.new(fresnel.outputs["Fac"],       mix_atmo.inputs["Fac"])
+links.new(bsdf.outputs["BSDF"],         mix_atmo.inputs[1])
+links.new(emission.outputs["Emission"], mix_atmo.inputs[2])
+links.new(mix_atmo.outputs["Shader"],   output.inputs["Surface"])
+
+uranus.data.materials.append(mat)
+
+# ── RINGS ─────────────────────────────────────────────────────────────────────
+RING_SPECS = [
+    # (inner_r, outer_r, name, opacity, col_dark, col_bright)
+    # All 13 rings in correct orbital order (innermost → outermost)
+    # Uranus radius = 2.0 in scene units
+    #
+    # Zeta — innermost, very faint and diffuse
+    (2.14, 2.175, "Ring_Zeta",  0.05, (0.12, 0.11, 0.10), (0.20, 0.18, 0.16)),
+    (2.38, 2.395, "Ring_6",     0.08, (0.15, 0.14, 0.13), (0.25, 0.23, 0.21)),
+    (2.44, 2.455, "Ring_5",     0.08, (0.15, 0.14, 0.13), (0.25, 0.23, 0.21)),
+    (2.50, 2.515, "Ring_4",     0.08, (0.15, 0.14, 0.13), (0.25, 0.23, 0.21)),
+    (2.58, 2.600, "Ring_Alpha", 0.10, (0.18, 0.16, 0.14), (0.28, 0.26, 0.22)),
+    (2.67, 2.690, "Ring_Beta",  0.10, (0.18, 0.16, 0.14), (0.28, 0.26, 0.22)),
+    (2.78, 2.795, "Ring_Eta",   0.09, (0.16, 0.15, 0.13), (0.26, 0.24, 0.21)),
+    (2.87, 2.895, "Ring_Gamma", 0.11, (0.20, 0.18, 0.16), (0.30, 0.28, 0.24)),
+    (2.97, 2.995, "Ring_Delta", 0.11, (0.20, 0.18, 0.16), (0.30, 0.28, 0.24)),
+    # Lambda — narrow, faint, sits between Delta and Epsilon
+    (3.03, 3.045, "Ring_Lambda",0.06, (0.13, 0.12, 0.11), (0.22, 0.20, 0.18)),
+    # Epsilon — brightest inner ring, still dark gray not white
+    (3.10, 3.160, "Ring_Eps",   0.55, (0.35, 0.34, 0.32), (0.55, 0.54, 0.50)),
+    # Nu — wide diffuse outer ring discovered by Hubble (2007)
+    (3.35, 3.500, "Ring_Nu",    0.04, (0.10, 0.09, 0.09), (0.18, 0.16, 0.15)),
+    # Mu — outermost and widest ring, very faint and diffuse
+    (3.70, 4.100, "Ring_Mu",    0.03, (0.09, 0.08, 0.08), (0.16, 0.14, 0.13)),
+]
+
+SEGMENTS = 512  # smoother rings
+
+ring_parent = bpy.data.objects.new("Uranus_Rings", None)
+bpy.context.collection.objects.link(ring_parent)
+
+for inner, outer, rname, opacity, col_dark, col_bright in RING_SPECS:
+    bm = bmesh.new()
+    uv_layer = bm.loops.layers.uv.new("UVMap")
+
+    for i in range(SEGMENTS):
+        a0 = 2 * math.pi * i       / SEGMENTS
+        a1 = 2 * math.pi * (i + 1) / SEGMENTS
+        t0 = i       / SEGMENTS
+        t1 = (i + 1) / SEGMENTS
+
+        vi0 = bm.verts.new((inner * math.cos(a0), inner * math.sin(a0), 0.0))
+        vo0 = bm.verts.new((outer * math.cos(a0), outer * math.sin(a0), 0.0))
+        vo1 = bm.verts.new((outer * math.cos(a1), outer * math.sin(a1), 0.0))
+        vi1 = bm.verts.new((inner * math.cos(a1), inner * math.sin(a1), 0.0))
+
+        face = bm.faces.new([vi0, vo0, vo1, vi1])
+        face.loops[0][uv_layer].uv = (0.0, t0)
+        face.loops[1][uv_layer].uv = (1.0, t0)
+        face.loops[2][uv_layer].uv = (1.0, t1)
+        face.loops[3][uv_layer].uv = (0.0, t1)
+
+    me = bpy.data.meshes.new(rname + "_Mesh")
+    bm.to_mesh(me)
+    bm.free()
+
+    ring_obj = bpy.data.objects.new(rname, me)
+    bpy.context.collection.objects.link(ring_obj)
+
+    ring_mat = bpy.data.materials.new(name=rname + "_Mat")
+    ring_mat.use_nodes = True
+    ring_mat.surface_render_method = 'BLENDED'
+    rnodes = ring_mat.node_tree.nodes
+    rlinks = ring_mat.node_tree.links
+    rnodes.clear()
+
+    routput = rnodes.new("ShaderNodeOutputMaterial")
+    transp  = rnodes.new("ShaderNodeBsdfTransparent")
+    rbsdf   = rnodes.new("ShaderNodeBsdfPrincipled")
+    mix_sh  = rnodes.new("ShaderNodeMixShader")
+
+    rbsdf.inputs["Base Color"].default_value = (*col_bright, 1.0)
+    rbsdf.inputs["Roughness"].default_value  = 0.95
+    rbsdf.inputs["Metallic"].default_value   = 0.0
+    rbsdf.inputs["Specular IOR Level"].default_value = 0.02
+
+    # Simple noise for particle texture
+    ring_coord = rnodes.new("ShaderNodeTexCoord")
+    ring_map   = rnodes.new("ShaderNodeMapping")
+    ring_map.inputs["Scale"].default_value = (150.0, 1.0, 1.0)
+    rlinks.new(ring_coord.outputs["Generated"], ring_map.inputs["Vector"])
+
+    ring_noise = rnodes.new("ShaderNodeTexNoise")
+    ring_noise.inputs["Scale"].default_value      = 1.0
+    ring_noise.inputs["Detail"].default_value     = 6.0
+    ring_noise.inputs["Roughness"].default_value  = 0.7
+    ring_noise.inputs["Distortion"].default_value = 0.0
+    rlinks.new(ring_map.outputs["Vector"], ring_noise.inputs["Vector"])
+
+    ring_ramp = rnodes.new("ShaderNodeValToRGB")
+    ring_ramp.color_ramp.elements[0].position = 0.3
+    ring_ramp.color_ramp.elements[0].color    = (*col_dark,   1.0)
+    ring_ramp.color_ramp.elements[1].position = 0.7
+    ring_ramp.color_ramp.elements[1].color    = (*col_bright, 1.0)
+    rlinks.new(ring_noise.outputs["Fac"],  ring_ramp.inputs["Fac"])
+    rlinks.new(ring_ramp.outputs["Color"], rbsdf.inputs["Base Color"])
+
+    # Scale noise output by opacity to control per-ring transparency
+    opacity_math = rnodes.new("ShaderNodeMath")
+    opacity_math.operation = 'MULTIPLY'
+    opacity_math.inputs[1].default_value = opacity
+    rlinks.new(ring_noise.outputs["Fac"], opacity_math.inputs[0])
+
+    rlinks.new(opacity_math.outputs["Value"], mix_sh.inputs["Fac"])
+    rlinks.new(transp.outputs["BSDF"],        mix_sh.inputs[1])
+    rlinks.new(rbsdf.outputs["BSDF"],         mix_sh.inputs[2])
+    rlinks.new(mix_sh.outputs["Shader"],      routput.inputs["Surface"])
+
+    ring_obj.data.materials.append(ring_mat)
+    bpy.ops.object.select_all(action='DESELECT')
+    ring_obj.select_set(True)
+    bpy.context.view_layer.objects.active = ring_obj
+    bpy.ops.object.shade_flat()
+    ring_obj.parent = ring_parent
+
+# Single rotation assignment
+ring_parent.rotation_euler[0] = math.radians(AXIAL_TILT_DEGREES)
+ring_parent.rotation_euler[1] = 0.0
+ring_parent.rotation_euler[2] = math.radians(90.0)
+
+# ── LIGHTING ──────────────────────────────────────────────────────────────────
+bpy.ops.object.light_add(type='SUN', location=(8, -4, 2))
+sun = bpy.context.active_object
+sun.name = "Sun_Key"
+sun.data.energy    = 3.5
+sun.data.angle     = 2.0
+sun.data.color     = (1.0, 1.0, 1.0)
+sun.rotation_euler = (1.2, 0.0, -0.8)
+
+bpy.ops.object.light_add(type='POINT', location=(-12, 2, 0))
+fill = bpy.context.active_object
+fill.name = "Space_Fill"
+fill.data.energy           = 6.0
+fill.data.color            = (0.40, 0.80, 1.0)
+fill.data.shadow_soft_size = 20.0
+
+bpy.ops.object.light_add(type='POINT', location=(0, -6, -8))
+fill2 = bpy.context.active_object
+fill2.name = "Space_Fill2"
+fill2.data.energy           = 3.0
+fill2.data.color            = (0.35, 0.70, 0.90)
+fill2.data.shadow_soft_size = 15.0
+
+bpy.ops.object.light_add(type='AREA', location=(-5, 0, 0))
+rim = bpy.context.active_object
+rim.name = "Rim_Light"
+rim.data.energy    = 4.0
+rim.data.size      = 14.0
+rim.data.color     = (0.15, 0.90, 1.0)
+rim.rotation_euler = (1.57, 0, 1.57)
+
+# ── WORLD — HDR BACKGROUND ────────────────────────────────────────────────────
+world = bpy.data.worlds["World"]
+world.use_nodes = True
+world_nodes = world.node_tree.nodes
+world_links = world.node_tree.links
+world_nodes.clear()
+
+output_world = world_nodes.new("ShaderNodeOutputWorld")
+bg           = world_nodes.new("ShaderNodeBackground")
+env_tex      = world_nodes.new("ShaderNodeTexEnvironment")
+
+abs_hdr_path = bpy.path.abspath(HDR_PATH)
+if os.path.exists(abs_hdr_path):
+    hdr_img = bpy.data.images.load(abs_hdr_path)
+    env_tex.image = hdr_img
+    print(f"[World] HDR loaded: {abs_hdr_path}")
+else:
+    print(f"[World] WARNING – HDR not found at: {abs_hdr_path}")
+
+bg.inputs["Strength"].default_value = 1.0
+world_links.new(env_tex.outputs["Color"], bg.inputs["Color"])
+world_links.new(bg.outputs["Background"], output_world.inputs["Surface"])
+
+# ── CAMERA ────────────────────────────────────────────────────────────────────
+cam_x =  0.0
+cam_y = -12.0
+cam_z =  5.0
+
+bpy.ops.object.camera_add(location=(cam_x, cam_y, cam_z))
+cam = bpy.context.active_object
+cam.name = "Camera"
+
+direction = mathutils.Vector((0, 0, 0)) - mathutils.Vector((cam_x, cam_y, cam_z))
+rot_quat  = direction.to_track_quat('-Z', 'Y')
+cam.rotation_euler = rot_quat.to_euler()
+
+cam.data.lens = 37
+bpy.context.scene.camera = cam
+
+# ── RENDER SETTINGS ───────────────────────────────────────────────────────────
+scene = bpy.context.scene
+scene.render.engine        = 'CYCLES'
+scene.cycles.device        = 'GPU'
+scene.cycles.samples       = 256
+scene.cycles.use_denoising = True
+scene.cycles.denoiser      = 'OPENIMAGEDENOISE'
+
+scene.cycles.max_bounces             = 6
+scene.cycles.diffuse_bounces         = 3
+scene.cycles.glossy_bounces          = 3
+scene.cycles.transmission_bounces    = 6
+scene.cycles.volume_bounces          = 0
+scene.cycles.transparent_max_bounces = 8
+scene.cycles.tile_x                  = 4096
+scene.cycles.tile_y                  = 4096
+scene.render.use_persistent_data     = True
+
+scene.render.resolution_x          = 1920
+scene.render.resolution_y          = 1080
+scene.render.resolution_percentage = 100
+
+scene.view_settings.view_transform = 'Filmic'
+scene.view_settings.look           = 'High Contrast'
+scene.view_settings.exposure       = 0.30
+scene.view_settings.gamma          = 1.05
+
+scene.render.image_settings.file_format  = 'FFMPEG'
+scene.render.ffmpeg.format               = 'MPEG4'
+scene.render.ffmpeg.codec                = 'H264'
+scene.render.ffmpeg.constant_rate_factor = 'HIGH'
+scene.render.ffmpeg.ffmpeg_preset        = 'GOOD'
+scene.render.ffmpeg.audio_codec          = 'NONE'
+scene.render.filepath = OUTPUT_PATH
+
+# ── ANIMATION — SEAMLESS LOOP ─────────────────────────────────────────────────
+scene.frame_start = 1
+scene.frame_end   = TOTAL_FRAMES
+scene.render.fps  = FPS
+
+bpy.context.view_layer.objects.active = uranus
+uranus.select_set(True)
+
+# FIX: Uranus is parented to tilt_empty which holds the 97.77° axial tilt.
+# We only keyframe the Z rotation on Uranus itself so it spins around its
+# own tilted pole — not the world Z axis — eliminating the wobble artifact.
+for frame_num in range(scene.frame_start, scene.frame_end + 1):
+    scene.frame_set(frame_num)
+    progress = (frame_num - 1) / TOTAL_FRAMES
+    uranus.rotation_euler = (0.0, 0.0, math.radians(progress * -360.0))
+    uranus.keyframe_insert(data_path="rotation_euler", index=2)
+
+for fc in uranus.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
+
+scene.frame_set(1)
+
+print("=" * 60)
+print("✓ Scene ready — Render Animation with Ctrl+F12")
+print(f"✓ Output: {OUTPUT_PATH}")
+print("=" * 60)
             </code></pre>
           </div>
 
