@@ -68,8 +68,8 @@ import bpy
 import os
 import math
 
-TEXTURE_PATH = "C:/Users/Ronzhem Dioso/Downloads/8k_jupiter.jpg"
-OUTPUT_PATH  = "C:/Users/Ronzhem Dioso/Downloads/jupiter_render.mp4"
+TEXTURE_PATH = add texture path here (e.g. "C:/path/to/jupiter_texture.jpg")
+OUTPUT_PATH  = add output path here (e.g. "C:/path/to/jupiter_animation.mp4")
 
 AXIAL_TILT_DEGREES = 3.13
 
@@ -237,7 +237,7 @@ rim.data.size          = 10.0
 rim.data.color         = (0.95, 0.80, 0.55)
 rim.rotation_euler     = (1.57, 0, 1.57)
 
-HDR_PATH = "C:/Users/Ronzhem Dioso/Downloads/hdr.png"
+HDR_PATH = add HDR environment map path here (e.g. "C:/path/to/space_hdr.hdr")
 
 world = bpy.data.worlds["World"]
 world.use_nodes = True
