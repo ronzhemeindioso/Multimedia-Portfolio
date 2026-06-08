@@ -400,6 +400,7 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: border-color 0.2s, background 0.2s;
+  min-width: 0;
 }
 
 .calc-section .calc-input::placeholder {
@@ -424,17 +425,20 @@
   font-family: 'Source Sans 3', sans-serif;
   transition: background 0.25s, color 0.25s, transform 0.2s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .calc-section .calc-btn:hover {
   background: rgba(0,0,0,0.7);
+  color: #fff;
   transform: translateY(-2px);
 }
 
-@media (max-width: 600px) {
-  .calc-section .calc-input-row {
-    flex-direction: column;
-  }
+.calc-error {
+  color: rgba(255,255,255,0.9);
+  font-size: 0.88rem;
+  font-weight: 600;
+  min-height: 1.2em;
 }
 
 /* ── CELESTIAL BODIES ── */
@@ -443,16 +447,16 @@
   flex-direction: column;
   gap: 64px;
   width: 100%;
-  max-width: 1600px; /* increased from 1100px to fill side space */
+  max-width: 1600px;
 }
 
 .celestial-card {
   display: grid;
-  grid-template-columns: 1fr 1.4fr; /* image side gets more room */
+  grid-template-columns: 1fr 1.4fr;
   gap: 32px;
   position: relative;
   text-align: left;
-  align-items: stretch; /* both columns stretch to same height */
+  align-items: stretch;
 }
 
 .celestial-info {
@@ -502,6 +506,7 @@
   padding: 6px 0;
   border-bottom: 1px solid rgba(245,184,0,0.08);
   transition: border-color 0.3s ease;
+  gap: 12px;
 }
 
 .celestial-stat-row:last-child {
@@ -512,11 +517,13 @@
   font-weight: 600;
   color: #888;
   transition: color 0.3s ease;
+  flex-shrink: 0;
 }
 
 .celestial-stat-value {
   font-weight: 300;
   color: #ddd;
+  text-align: right;
 }
 
 .age-value {
@@ -598,6 +605,37 @@ video.celestial-img:hover {
   cursor: default;
 }
 
+/* ── DETAILS LINKS ── */
+.celestial-details-links {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.celestial-details-link {
+  display: inline-block;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: #f5b800;
+  color: #000;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.celestial-details-link:hover {
+  background: #f0bf1d;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 184, 0, 0.4);
+  text-decoration: none;
+  opacity: 1;
+}
+
 /* ── FOOTER ── */
 .project-footer {
   padding: 48px 10%;
@@ -628,9 +666,71 @@ video.celestial-img:hover {
   transform: translateY(-2px);
 }
 
-/* ── RESPONSIVE — 768px and below ── */
-@media (max-width: 768px) {
+/* ══════════════════════════════════════════
+   RESPONSIVE — 1200px (large tablets / small laptops)
+   ══════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  .celestial-grid {
+    max-width: 100%;
+    gap: 48px;
+  }
 
+  .celestial-card {
+    grid-template-columns: 1fr 1.2fr;
+    gap: 24px;
+  }
+
+  .celestial-info {
+    padding: 32px 36px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — 1024px (tablets landscape)
+   ══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .content-section {
+    padding: 64px 7%;
+  }
+
+  .celestial-card {
+    /* Stack image on top of info on mid-size screens */
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .celestial-img-wrap {
+    position: static;
+    min-height: unset;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .celestial-img {
+    width: 100%;
+    height: auto;
+    min-height: unset;
+  }
+
+  /* Reorder so image appears below info */
+  .celestial-info { order: 1; }
+  .celestial-img-wrap { order: 2; }
+
+  .sequence-item {
+    grid-template-columns: 56px 1fr 140px;
+    gap: 20px;
+    padding: 24px 24px;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — 768px (tablets portrait)
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Nav */
   nav {
     flex-direction: column;
     align-items: flex-start;
@@ -644,47 +744,62 @@ video.celestial-img:hover {
     gap: 12px;
   }
 
+  /* Hero */
   .project-hero {
     padding: 100px 6% 48px;
+    min-height: 40vh;
   }
 
   .project-tags {
     gap: 8px;
   }
 
+  /* Content sections */
   .content-section {
-    padding: 60px 6%;
+    padding: 52px 6%;
   }
 
+  /* Overview stats — go vertical */
   .overview-stats {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .stat-divider {
-    width: 60px;
+    width: 60%;
     height: 1px;
+    align-self: center;
   }
 
+  .stat-item {
+    padding: 20px 16px;
+  }
+
+  /* Details groups */
   .details-group {
     padding: 20px 20px;
   }
 
+  /* Sequence — hide the image column */
   .sequence-item {
     grid-template-columns: 48px 1fr;
     padding: 20px 20px;
+    gap: 16px;
   }
 
   .sequence-img {
     display: none;
   }
 
+  /* Celestial cards — single column */
   .celestial-card {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 16px;
   }
 
   .celestial-info {
-    padding: 28px;
+    padding: 28px 24px;
+    order: 1;
   }
 
   .celestial-img-wrap {
@@ -694,6 +809,7 @@ video.celestial-img:hover {
     width: 85%;
     margin: 0 auto;
     position: static;
+    order: 2;
   }
 
   .celestial-img {
@@ -701,16 +817,55 @@ video.celestial-img:hover {
     min-height: unset;
   }
 
+  /* Calculator */
+  .calc-section-inner {
+    padding: 48px 6%;
+  }
+
+  .calc-section .calc-input-row {
+    max-width: 100%;
+  }
+
+  /* Footer */
   .project-footer {
     flex-direction: column;
     gap: 16px;
     text-align: center;
+    padding: 36px 6%;
   }
 }
 
-/* ── RESPONSIVE — 480px and below ── */
-@media (max-width: 480px) {
+/* ══════════════════════════════════════════
+   RESPONSIVE — 600px (large phones)
+   ══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* Calculator input stacks */
+  .calc-section .calc-input-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
 
+  .calc-section .calc-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Celestial stat rows: allow wrapping on very small text */
+  .celestial-stat-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .celestial-stat-value {
+    text-align: left;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE — 480px (phones)
+   ══════════════════════════════════════════ */
+@media (max-width: 480px) {
   .project-title {
     font-size: clamp(2rem, 8vw, 3rem);
   }
@@ -719,10 +874,25 @@ video.celestial-img:hover {
     font-size: 0.95rem;
   }
 
-  .content-title {
-    font-size: clamp(1.5rem, 6vw, 2rem);
+  .project-hero {
+    padding: 90px 5% 40px;
   }
 
+  .content-section {
+    padding: 44px 5%;
+  }
+
+  .content-title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+    margin-bottom: 28px;
+  }
+
+  .section-sub {
+    margin-top: -18px;
+    font-size: 0.9rem;
+  }
+
+  /* Sequence */
   .sequence-number {
     font-size: 1.8rem;
   }
@@ -735,61 +905,117 @@ video.celestial-img:hover {
     font-size: 0.85rem;
   }
 
+  /* Celestial cards */
   .celestial-info {
-    padding: 20px;
+    padding: 20px 16px;
+    gap: 14px;
   }
 
   .celestial-name {
     font-size: 1.1rem;
   }
 
+  .celestial-desc {
+    font-size: 0.88rem;
+  }
+
+  .celestial-stat-row {
+    font-size: 0.82rem;
+  }
+
+  .celestial-facts-list li {
+    font-size: 0.85rem;
+  }
+
+  .celestial-img-wrap {
+    width: 100%;
+    border-radius: 14px;
+  }
+
+  .celestial-details-links {
+    gap: 0.5rem;
+  }
+
+  .celestial-details-link {
+    font-size: 0.7rem;
+    padding: 6px 14px;
+  }
+
+  /* Details groups */
   .details-group {
     padding: 16px;
   }
 
+  .details-list li {
+    font-size: 0.88rem;
+  }
+
+  /* Stats */
   .overview-stats {
     border-radius: 12px;
   }
 
   .stat-item {
-    padding: 20px 12px;
+    padding: 18px 12px;
   }
 
   .highlight-number {
     font-size: 1.6rem;
   }
 
-  .celestial-img-wrap {
-    width: 100%;
+  .highlight-label {
+    font-size: 0.7rem;
+  }
+
+  /* Calculator */
+  .calc-section-inner {
+    padding: 40px 5%;
+    gap: 8px;
+  }
+
+  .calc-section-sub {
+    font-size: 1rem;
+  }
+
+  /* Footer */
+  .project-footer {
+    padding: 28px 5%;
+    font-size: 0.82rem;
+  }
+
+  .back-btn {
+    font-size: 0.88rem;
+    padding: 10px 22px;
+  }
+
+  /* Sequence item */
+  .sequence-item {
+    padding: 16px;
+    gap: 12px;
   }
 }
 
-.celestial-details-links {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
+/* ══════════════════════════════════════════
+   RESPONSIVE — 360px (small phones)
+   ══════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .project-hero {
+    padding: 80px 4% 32px;
+  }
 
-.celestial-details-link {
-  display: inline-block;
-  padding: 7px 16px;
-  border-radius: 999px;
-  background: #f5b800;
-  color: #000;
-  font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
-}
+  .content-section {
+    padding: 36px 4%;
+  }
 
-.celestial-details-link:hover {
-  background: #f0bf1d;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 184, 0, 0.4);
-  text-decoration: none;
-  opacity: 1;
+  .celestial-info {
+    padding: 16px 12px;
+  }
+
+  .nav-links {
+    gap: 8px;
+  }
+
+  .nav-links a {
+    font-size: 0.85rem;
+  }
 }

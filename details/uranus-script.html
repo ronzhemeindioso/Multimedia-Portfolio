@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Script – Ronz Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../style.css"/>
+  <link rel="stylesheet" href="script-detail.css"/>
+</head>
+<body>
+
+  <nav role="navigation" aria-label="Main navigation">
+    <div class="nav-logo">
+      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
+      Multimedia Portfolio
+    </div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../about.html">About</a></li>
+    </ul>
+  </nav>
+
+  <main id="main-content">
+    <div class="page-inner">
+
+      <section class="script-hero" aria-label="Script detail hero">
+        <div class="script-hero-inner">
+          <span class="project-label">Python / Blender Script</span>
+          <h1 class="script-title">Uranus – Blender Script</h1>
+          <p class="script-subtitle">The Python script used inside Blender to animate and configure Uranus's orbital motion and rotation.</p>
+        </div>
+      </section>
+
+       <section class="script-video" aria-labelledby="video-heading">
+        <div class="script-video-inner">
+          <div class="video-wrapper">
+            <iframe
+              src="https://www.youtube.com/embed/wEPGZGUyFok"
+              title="Uranus Blender Animation Demo"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+      </section>
+
+      <section class="script-section" aria-labelledby="script-heading">
+        <div class="script-section-inner">
+
+          <div class="script-block">
+            <div class="script-block-header">
+              <div class="script-block-header-left">
+                <span class="script-lang-dot" aria-hidden="true"></span>
+                <span class="script-filename">uranus.py</span>
+              </div>
+              <div class="script-block-header-right">
+                <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy script to clipboard">Copy</button>
+                <a class="download-btn" id="downloadBtn" href="#" aria-label="Download uranus.py script">Download</a>
+              </div>
+            </div>
+            <pre class="script-code" id="scriptCode"><code>
+
+codee hereee
+            </code></pre>
+          </div>
+
+          <div class="script-notes" aria-labelledby="notes-heading">
+            <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
+            <ul class="script-notes-list">
+              <li>Replace the placeholder code above with your actual Blender Python script.</li>
+              <li>The orbital period of Uranus is 84.0 Earth years, the third longest of all planets.</li>
+              <li>Distance is scaled for visualization — not true astronomical units.</li>
+            </ul>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+<footer class="project-footer" role="contentinfo">
+  <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+  <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+</footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var btn = document.getElementById('copyBtn');
+      var code = document.getElementById('scriptCode');
+      var dlBtn = document.getElementById('downloadBtn');
+
+      if (btn && code) {
+        btn.addEventListener('click', function () {
+          navigator.clipboard.writeText(code.innerText).then(function () {
+            btn.textContent = 'Copied!';
+            setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+          }).catch(function () {
+            btn.textContent = 'Failed';
+            setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+          });
+        });
+      }
+
+      if (dlBtn && code) {
+        dlBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var blob = new Blob([code.innerText], { type: 'text/plain' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'uranus.py';
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      }
+
+    })();
+  </script>
+
+</body>
+</html>
