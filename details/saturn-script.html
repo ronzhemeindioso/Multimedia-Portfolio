@@ -39,7 +39,7 @@
         <div class="script-video-inner">
           <div class="video-wrapper">
             <iframe
-              src="https://www.youtube.com/embed/wEPGZGUyFok"
+              src="https://www.youtube.com/embed/O7NlYeLRW3Y"
               title="Saturn Blender Animation Demo"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -64,8 +64,645 @@
               </div>
             </div>
             <pre class="script-code" id="scriptCode"><code>
+import bpy
+import math
+import os
 
-codee hereee
+# ─────────────────────────────────────────────
+# CONFIGURATION — absolute paths
+# ─────────────────────────────────────────────
+HDR_PATH       = add hdr path here (e.g. "C:/path/to/your/hdr_image.hdr")
+SATURN_TEXTURE = add saturn texture path here (e.g. "C:/path/to/your/saturn_texture.jpg")
+RING_TEXTURE   = add ring texture path here (e.g. "C:/path/to/your/saturn_ring_texture.png")
+OUTPUT_PATH    = add output path here (e.g. "C:/path/to/output/saturn_animation.mp4")
+
+# ─────────────────────────────────────────────
+# SCIENTIFIC VALUES
+# ─────────────────────────────────────────────
+AXIAL_TILT_DEGREES = 26.73
+TOTAL_FRAMES = 106
+FPS          = 24
+
+# ─────────────────────────────────────────────
+
+def clear_scene():
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete(use_global=False)
+    for col in [bpy.data.meshes, bpy.data.materials,
+                bpy.data.images, bpy.data.lights, bpy.data.cameras,
+                bpy.data.curves]:
+        for block in list(col):
+            try:
+                col.remove(block)
+            except Exception:
+                pass
+
+def setup_scene():
+    scene = bpy.context.scene
+    scene.render.engine        = 'CYCLES'
+    scene.cycles.samples       = 256
+    scene.cycles.use_denoising = True
+    scene.render.resolution_x  = 1920
+    scene.render.resolution_y  = 1080
+    scene.render.fps           = FPS
+    scene.frame_start          = 1
+    scene.frame_end            = TOTAL_FRAMES
+
+    scene.display_settings.display_device    = 'sRGB'
+    scene.view_settings.view_transform       = 'AgX'
+    scene.view_settings.look                 = 'None'
+    scene.view_settings.exposure             =  0.0
+    scene.view_settings.gamma                =  1.0
+    scene.sequencer_colorspace_settings.name = 'sRGB'
+
+    scene.world.use_nodes = True
+    wnt = scene.world.node_tree
+    wnt.nodes.clear()
+    out_node   = wnt.nodes.new('ShaderNodeOutputWorld')
+    bg_node    = wnt.nodes.new('ShaderNodeBackground')
+    env_node   = wnt.nodes.new('ShaderNodeTexEnvironment')
+    map_node   = wnt.nodes.new('ShaderNodeMapping')
+    coord_node = wnt.nodes.new('ShaderNodeTexCoord')
+
+    if os.path.isfile(HDR_PATH):
+        hdr_img = bpy.data.images.load(HDR_PATH)
+        env_node.image = hdr_img
+        bg_node.inputs['Strength'].default_value = 2.0  # FIXED v10: was 1.2 — punches stars out of grey
+        # Rotate HDR so brightest star clusters aren't dead-center
+        map_node.inputs['Rotation'].default_value = (0.0, math.radians(15), math.radians(45))
+        wnt.links.new(coord_node.outputs['Generated'], map_node.inputs['Vector'])
+        wnt.links.new(map_node.outputs['Vector'],      env_node.inputs['Vector'])
+        wnt.links.new(env_node.outputs['Color'],       bg_node.inputs['Color'])
+        print(f"[OK] HDR loaded: {HDR_PATH}")
+    else:
+        print(f"[WARNING] HDR not found — using dark fallback + procedural stars")
+        bg_node.inputs['Color'].default_value    = (0.0, 0.0, 0.002, 1.0)  # FIXED v10: true black, was (0.001,0.001,0.005)
+        bg_node.inputs['Strength'].default_value = 1.0
+    wnt.links.new(bg_node.outputs['Background'], out_node.inputs['Surface'])
+
+def create_starfield():
+    import random, bmesh
+    random.seed(42)
+
+    # FIXED v10: emission strengths boosted +50-60% so stars survive compositor processing
+    star_configs = [
+        (1800, (1.0,  1.0,  1.0,  1.0), 2.8, "Stars_White"),   # was 1.8
+        (350,  (0.72, 0.82, 1.0,  1.0), 4.0, "Stars_Blue"),    # was 2.5
+        (220,  (1.0,  0.88, 0.62, 1.0), 3.5, "Stars_Amber"),   # was 2.2
+        (90,   (1.0,  0.52, 0.42, 1.0), 5.5, "Stars_Red"),     # was 3.5
+        (25,   (0.92, 1.0,  0.88, 1.0), 9.0, "Stars_Bright"),  # was 6.0
+    ]
+
+    for count, color, strength, obj_name in star_configs:
+        bm = bmesh.new()
+        for _ in range(count):
+            r     = random.uniform(150, 300)
+            theta = random.uniform(0, math.pi)
+            phi   = random.uniform(0, 2 * math.pi)
+            bm.verts.new((r * math.sin(theta) * math.cos(phi),
+                          r * math.sin(theta) * math.sin(phi),
+                          r * math.cos(theta)))
+        me = bpy.data.meshes.new(obj_name + "Mesh")
+        bm.to_mesh(me)
+        bm.free()
+        ob = bpy.data.objects.new(obj_name, me)
+        bpy.context.collection.objects.link(ob)
+
+        mat = bpy.data.materials.new(obj_name + "Mat")
+        mat.use_nodes = True
+        mat.node_tree.nodes.clear()
+        emit = mat.node_tree.nodes.new('ShaderNodeEmission')
+        emit.inputs['Color'].default_value    = color
+        emit.inputs['Strength'].default_value = strength
+        out = mat.node_tree.nodes.new('ShaderNodeOutputMaterial')
+        mat.node_tree.links.new(emit.outputs['Emission'], out.inputs['Surface'])
+        me.materials.append(mat)
+
+    bm_gal = bmesh.new()
+    for _ in range(800):
+        r     = random.uniform(295, 300)
+        theta = random.gauss(math.pi / 2.0, 0.20)
+        phi   = random.uniform(0, 2 * math.pi)
+        bm_gal.verts.new((r * math.sin(theta) * math.cos(phi),
+                           r * math.sin(theta) * math.sin(phi),
+                           r * math.cos(theta)))
+    me_gal = bpy.data.meshes.new("GalaxyBandMesh")
+    bm_gal.to_mesh(me_gal)
+    bm_gal.free()
+    ob_gal = bpy.data.objects.new("GalaxyBand", me_gal)
+    bpy.context.collection.objects.link(ob_gal)
+    mat_gal = bpy.data.materials.new("GalaxyBandMat")
+    mat_gal.use_nodes = True
+    mat_gal.node_tree.nodes.clear()
+    emit_gal = mat_gal.node_tree.nodes.new('ShaderNodeEmission')
+    emit_gal.inputs['Color'].default_value    = (0.80, 0.85, 1.0, 1.0)
+    emit_gal.inputs['Strength'].default_value = 0.40  # FIXED v10: was 0.25
+    out_gal = mat_gal.node_tree.nodes.new('ShaderNodeOutputMaterial')
+    mat_gal.node_tree.links.new(emit_gal.outputs['Emission'], out_gal.inputs['Surface'])
+    me_gal.materials.append(mat_gal)
+
+def load_image(path, name, colorspace='sRGB'):
+    if name in bpy.data.images:
+        return bpy.data.images[name]
+    if not os.path.isfile(path):
+        print(f"[WARNING] Texture not found: {path}")
+        return None
+    img = bpy.data.images.load(path)
+    img.name = name
+    img.colorspace_settings.name = colorspace
+    print(f"[OK] Texture loaded: {path}")
+    return img
+
+def make_saturn_material(img):
+    mat = bpy.data.materials.new("SaturnMat")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new('ShaderNodeOutputMaterial')
+
+    coord   = nt.nodes.new('ShaderNodeTexCoord')
+    mapping = nt.nodes.new('ShaderNodeMapping')
+    mapping.inputs['Scale'].default_value = (1.0, 1.0, 1.0)
+    nt.links.new(coord.outputs['UV'], mapping.inputs['Vector'])
+
+    if img:
+        tex = nt.nodes.new('ShaderNodeTexImage')
+        tex.image = img
+        nt.links.new(mapping.outputs['Vector'], tex.inputs['Vector'])
+
+        bc = nt.nodes.new('ShaderNodeBrightContrast')
+        bc.inputs['Bright'].default_value   =  0.02
+        bc.inputs['Contrast'].default_value =  0.55
+        nt.links.new(tex.outputs['Color'], bc.inputs['Color'])
+
+        huesat = nt.nodes.new('ShaderNodeHueSaturation')
+        huesat.inputs['Hue'].default_value        = 0.50
+        huesat.inputs['Saturation'].default_value = 1.00
+        huesat.inputs['Value'].default_value      = 1.00
+        nt.links.new(bc.outputs['Color'], huesat.inputs['Color'])
+
+        map2 = nt.nodes.new('ShaderNodeMapping')
+        map2.inputs['Scale'].default_value = (12.0, 1.0, 1.0)
+        nt.links.new(coord.outputs['UV'], map2.inputs['Vector'])
+
+        fine_noise = nt.nodes.new('ShaderNodeTexNoise')
+        fine_noise.inputs['Scale'].default_value      = 5.0
+        fine_noise.inputs['Detail'].default_value     = 12.0
+        fine_noise.inputs['Roughness'].default_value  = 0.55
+        fine_noise.inputs['Distortion'].default_value = 0.50
+        nt.links.new(map2.outputs['Vector'], fine_noise.inputs['Vector'])
+
+        grey_ramp = nt.nodes.new('ShaderNodeValToRGB')
+        grey_ramp.color_ramp.interpolation = 'EASE'
+        grey_ramp.color_ramp.elements[0].position = 0.0
+        grey_ramp.color_ramp.elements[0].color    = (0.40, 0.40, 0.40, 1.0)
+        grey_ramp.color_ramp.elements[1].position = 1.0
+        grey_ramp.color_ramp.elements[1].color    = (0.62, 0.62, 0.62, 1.0)
+        nt.links.new(fine_noise.outputs['Fac'], grey_ramp.inputs['Fac'])
+
+        mix_bands = nt.nodes.new('ShaderNodeMixRGB')
+        mix_bands.blend_type = 'SOFT_LIGHT'
+        mix_bands.inputs['Fac'].default_value = 0.45
+        nt.links.new(huesat.outputs['Color'],    mix_bands.inputs['Color1'])
+        nt.links.new(grey_ramp.outputs['Color'], mix_bands.inputs['Color2'])
+
+        storm_map = nt.nodes.new('ShaderNodeMapping')
+        storm_map.inputs['Scale'].default_value = (4.0, 1.5, 1.0)
+        nt.links.new(coord.outputs['UV'], storm_map.inputs['Vector'])
+
+        storm_noise = nt.nodes.new('ShaderNodeTexNoise')
+        storm_noise.inputs['Scale'].default_value      = 3.5
+        storm_noise.inputs['Detail'].default_value     = 8.0
+        storm_noise.inputs['Roughness'].default_value  = 0.75
+        storm_noise.inputs['Lacunarity'].default_value = 2.8
+        storm_noise.inputs['Distortion'].default_value = 0.60
+        nt.links.new(storm_map.outputs['Vector'], storm_noise.inputs['Vector'])
+
+        storm_mix = nt.nodes.new('ShaderNodeMixRGB')
+        storm_mix.blend_type = 'SOFT_LIGHT'
+        storm_mix.inputs['Fac'].default_value = 0.12
+        nt.links.new(mix_bands.outputs['Color'],      storm_mix.inputs['Color1'])
+        nt.links.new(storm_noise.outputs['Color'],    storm_mix.inputs['Color2'])
+
+        final_color = storm_mix.outputs['Color']
+    else:
+        fallback = nt.nodes.new('ShaderNodeRGB')
+        fallback.outputs[0].default_value = (0.78, 0.72, 0.55, 1.0)
+        final_color = fallback.outputs['Color']
+
+    bsdf = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Roughness'].default_value = 0.85
+
+    if 'Specular IOR Level' in bsdf.inputs:
+        bsdf.inputs['Specular IOR Level'].default_value = 0.01
+    elif 'Specular' in bsdf.inputs:
+        bsdf.inputs['Specular'].default_value = 0.01
+
+    if 'Subsurface Weight' in bsdf.inputs:
+        bsdf.inputs['Subsurface Weight'].default_value = 0.08
+    elif 'Subsurface' in bsdf.inputs:
+        bsdf.inputs['Subsurface'].default_value = 0.08
+
+    if 'Subsurface Scale' in bsdf.inputs:
+        bsdf.inputs['Subsurface Scale'].default_value = 0.15
+
+    if 'Subsurface Color' in bsdf.inputs:
+        bsdf.inputs['Subsurface Color'].default_value = (0.92, 0.82, 0.58, 1.0)
+
+    nt.links.new(final_color, bsdf.inputs['Base Color'])
+
+    layer_weight = nt.nodes.new('ShaderNodeLayerWeight')
+    layer_weight.inputs['Blend'].default_value = 0.55
+    rim_emission = nt.nodes.new('ShaderNodeEmission')
+    rim_emission.inputs['Color'].default_value    = (0.75, 0.88, 1.0, 1.0)
+    rim_emission.inputs['Strength'].default_value = 0.03
+    rim_mix = nt.nodes.new('ShaderNodeMixShader')
+    rim_ramp = nt.nodes.new('ShaderNodeValToRGB')
+    rim_ramp.color_ramp.interpolation = 'EASE'
+    rim_ramp.color_ramp.elements[0].position = 0.70
+    rim_ramp.color_ramp.elements[0].color    = (0.0, 0.0, 0.0, 1.0)
+    rim_ramp.color_ramp.elements[1].position = 1.0
+    rim_ramp.color_ramp.elements[1].color    = (1.0, 1.0, 1.0, 1.0)
+    nt.links.new(layer_weight.outputs['Fresnel'], rim_ramp.inputs['Fac'])
+    nt.links.new(rim_ramp.outputs['Color'],       rim_mix.inputs['Fac'])
+    nt.links.new(bsdf.outputs['BSDF'],            rim_mix.inputs[1])
+    nt.links.new(rim_emission.outputs['Emission'], rim_mix.inputs[2])
+
+    ambient = nt.nodes.new('ShaderNodeEmission')
+    ambient.inputs['Strength'].default_value = 0.40
+    nt.links.new(final_color, ambient.inputs['Color'])
+
+    add_shader = nt.nodes.new('ShaderNodeAddShader')
+    nt.links.new(rim_mix.outputs['Shader'],   add_shader.inputs[0])
+    nt.links.new(ambient.outputs['Emission'], add_shader.inputs[1])
+    nt.links.new(add_shader.outputs['Shader'], out.inputs['Surface'])
+
+    return mat
+
+def create_saturn():
+    tilt_empty = bpy.data.objects.new("SaturnTilt", None)
+    bpy.context.collection.objects.link(tilt_empty)
+    tilt_empty.rotation_euler = (
+        math.radians(AXIAL_TILT_DEGREES),
+        math.radians(27.0),
+        math.radians(0.0),
+    )
+
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        radius=3.0, segments=128, ring_count=64, location=(0, 0, 0))
+    saturn = bpy.context.active_object
+    saturn.name = "Saturn"
+    saturn.scale = (1.0, 1.0, 0.902)
+    bpy.ops.object.transform_apply(scale=True)
+    saturn.parent = tilt_empty
+    saturn.matrix_parent_inverse = tilt_empty.matrix_world.inverted()
+
+    img = load_image(SATURN_TEXTURE, "SaturnSurface")
+    mat = make_saturn_material(img)
+    saturn.data.materials.append(mat)
+    bpy.ops.object.shade_smooth()
+
+    print("\n" + "=" * 60)
+    print("SATURN ROTATION ANIMATION — SEAMLESS LOOP")
+    print("=" * 60)
+    print(f"Total frames         : {TOTAL_FRAMES}")
+    print(f"Frame rate           : {FPS} fps")
+    print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
+    print(f"Rotation direction   : PROGRADE")
+    print(f"Degrees traveled     : 360° (full seamless loop)")
+    print(f"Axial tilt           : {AXIAL_TILT_DEGREES}° (on SaturnTilt empty)")
+    print(f"Oblateness (Z scale) : 0.902")
+    print("=" * 60 + "\n")
+
+    for frame_num in range(1, TOTAL_FRAMES + 1):
+        bpy.context.scene.frame_set(frame_num)
+        progress = (frame_num - 1) / TOTAL_FRAMES
+        saturn.rotation_euler = (0.0, 0.0, math.radians(progress * 360.0))
+        saturn.keyframe_insert(data_path="rotation_euler", index=2)
+
+    for fc in saturn.animation_data.action.fcurves:
+        for kp in fc.keyframe_points:
+            kp.interpolation = 'LINEAR'
+
+    return saturn, tilt_empty
+
+def make_ring_material(img, alpha_fallback=0.75, ring_name=""):
+    mat = bpy.data.materials.new("RingMat_" + ring_name)
+    mat.use_nodes = True
+    mat.use_backface_culling = False
+
+    if hasattr(mat, 'blend_method'):
+        mat.blend_method  = 'HASHED'
+    if hasattr(mat, 'shadow_method'):
+        mat.shadow_method = 'HASHED'
+    if hasattr(mat, 'use_transparent_shadow'):
+        mat.use_transparent_shadow = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+
+    out    = nt.nodes.new('ShaderNodeOutputMaterial')
+    mix    = nt.nodes.new('ShaderNodeMixShader')
+    transp = nt.nodes.new('ShaderNodeBsdfTransparent')
+    bsdf   = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.inputs['Roughness'].default_value = 0.95
+
+    coord   = nt.nodes.new('ShaderNodeTexCoord')
+    mapping = nt.nodes.new('ShaderNodeMapping')
+    mapping.inputs['Location'].default_value = (0.0, 0.0, 0.0)
+    mapping.inputs['Scale'].default_value    = (1.0, 1.0, 1.0)
+    nt.links.new(coord.outputs['UV'], mapping.inputs['Vector'])
+
+    if img:
+        tex = nt.nodes.new('ShaderNodeTexImage')
+        tex.image = img
+        tex.extension = 'EXTEND'
+        nt.links.new(mapping.outputs['Vector'], tex.inputs['Vector'])
+
+        bc = nt.nodes.new('ShaderNodeBrightContrast')
+        bc.inputs['Bright'].default_value   =  0.08
+        bc.inputs['Contrast'].default_value =  0.40
+        nt.links.new(tex.outputs['Color'], bc.inputs['Color'])
+        nt.links.new(bc.outputs['Color'],  bsdf.inputs['Base Color'])
+
+        sep_uv = nt.nodes.new('ShaderNodeSeparateXYZ')
+        nt.links.new(mapping.outputs['Vector'], sep_uv.inputs['Vector'])
+
+        gradient_ramp = nt.nodes.new('ShaderNodeValToRGB')
+        gradient_ramp.color_ramp.interpolation = 'EASE'
+        gradient_ramp.color_ramp.elements[0].position = 0.0
+        gradient_ramp.color_ramp.elements[0].color = (0.0, 0.0, 0.0, 1.0)
+        gradient_ramp.color_ramp.elements[1].position = 1.0
+        gradient_ramp.color_ramp.elements[1].color = (1.0, 1.0, 1.0, 1.0)
+        inner_edge = gradient_ramp.color_ramp.elements.new(0.06)
+        inner_edge.color = (1.0, 1.0, 1.0, 1.0)
+        outer_edge = gradient_ramp.color_ramp.elements.new(0.93)
+        outer_edge.color = (1.0, 1.0, 1.0, 1.0)
+        nt.links.new(sep_uv.outputs['X'], gradient_ramp.inputs['Fac'])
+
+        alpha_math = nt.nodes.new('ShaderNodeMath')
+        alpha_math.operation = 'MULTIPLY'
+        nt.links.new(tex.outputs['Alpha'],           alpha_math.inputs[0])
+        nt.links.new(gradient_ramp.outputs['Color'], alpha_math.inputs[1])
+
+        cassini_sep = nt.nodes.new('ShaderNodeSeparateXYZ')
+        nt.links.new(mapping.outputs['Vector'], cassini_sep.inputs['Vector'])
+        cassini_math = nt.nodes.new('ShaderNodeMath')
+        cassini_math.operation = 'SUBTRACT'
+        cassini_math.inputs[1].default_value = 0.73
+        nt.links.new(cassini_sep.outputs['X'], cassini_math.inputs[0])
+        cassini_abs = nt.nodes.new('ShaderNodeMath')
+        cassini_abs.operation = 'ABSOLUTE'
+        nt.links.new(cassini_math.outputs['Value'], cassini_abs.inputs[0])
+        cassini_gt = nt.nodes.new('ShaderNodeMath')
+        cassini_gt.operation = 'GREATER_THAN'
+        cassini_gt.inputs[1].default_value = 0.025
+        nt.links.new(cassini_abs.outputs['Value'], cassini_gt.inputs[0])
+        cassini_final = nt.nodes.new('ShaderNodeMath')
+        cassini_final.operation = 'MULTIPLY'
+        nt.links.new(alpha_math.outputs['Value'],  cassini_final.inputs[0])
+        nt.links.new(cassini_gt.outputs['Value'],  cassini_final.inputs[1])
+
+        encke_math = nt.nodes.new('ShaderNodeMath')
+        encke_math.operation = 'SUBTRACT'
+        encke_math.inputs[1].default_value = 0.89
+        nt.links.new(cassini_sep.outputs['X'], encke_math.inputs[0])
+        encke_abs = nt.nodes.new('ShaderNodeMath')
+        encke_abs.operation = 'ABSOLUTE'
+        nt.links.new(encke_math.outputs['Value'], encke_abs.inputs[0])
+        encke_gt = nt.nodes.new('ShaderNodeMath')
+        encke_gt.operation = 'GREATER_THAN'
+        encke_gt.inputs[1].default_value = 0.008
+        nt.links.new(encke_abs.outputs['Value'], encke_gt.inputs[0])
+        final_alpha = nt.nodes.new('ShaderNodeMath')
+        final_alpha.operation = 'MULTIPLY'
+        nt.links.new(cassini_final.outputs['Value'], final_alpha.inputs[0])
+        nt.links.new(encke_gt.outputs['Value'],      final_alpha.inputs[1])
+
+        nt.links.new(final_alpha.outputs['Value'], mix.inputs['Fac'])
+    else:
+        bsdf.inputs['Base Color'].default_value = (0.55, 0.50, 0.42, 1.0)
+        mix.inputs['Fac'].default_value = alpha_fallback
+
+    nt.links.new(transp.outputs['BSDF'], mix.inputs[1])
+    nt.links.new(bsdf.outputs['BSDF'],   mix.inputs[2])
+    nt.links.new(mix.outputs['Shader'],  out.inputs['Surface'])
+    return mat
+
+def create_rings(tilt_empty):
+    import bmesh
+
+    ring_specs = [
+        (3.50, 4.00, "D_Ring", 0.00, 0.08, 0.15),
+        (4.05, 5.20, "C_Ring", 0.08, 0.30, 0.45),
+        (5.25, 7.40, "B_Ring", 0.30, 0.68, 0.90),
+        (7.60, 9.50, "A_Ring", 0.68, 0.95, 0.80),
+        (9.70, 9.90, "F_Ring", 0.95, 1.00, 0.30),
+    ]
+
+    ring_img = load_image(RING_TEXTURE, "SaturnRings")
+    if ring_img:
+        ring_img.colorspace_settings.name = 'sRGB'
+
+    ring_parent = bpy.data.objects.new("RingSystem", None)
+    bpy.context.collection.objects.link(ring_parent)
+    ring_parent.rotation_euler = (0.0, 0.0, 0.0)
+    ring_parent.parent = tilt_empty
+    ring_parent.matrix_parent_inverse = tilt_empty.matrix_world.inverted()
+
+    SEGMENTS = 512
+
+    for inner, outer, rname, u0, u1, alpha in ring_specs:
+        bm = bmesh.new()
+        uv_layer = bm.loops.layers.uv.new("UVMap")
+
+        cos_a = [math.cos(2.0 * math.pi * i / SEGMENTS) for i in range(SEGMENTS)]
+        sin_a = [math.sin(2.0 * math.pi * i / SEGMENTS) for i in range(SEGMENTS)]
+
+        for i in range(SEGMENTS):
+            j = (i + 1) % SEGMENTS
+            vi0 = bm.verts.new((inner * cos_a[i], inner * sin_a[i], 0.0))
+            vo0 = bm.verts.new((outer * cos_a[i], outer * sin_a[i], 0.0))
+            vo1 = bm.verts.new((outer * cos_a[j], outer * sin_a[j], 0.0))
+            vi1 = bm.verts.new((inner * cos_a[j], inner * sin_a[j], 0.0))
+            face = bm.faces.new([vi0, vo0, vo1, vi1])
+            t0 = i / SEGMENTS
+            t1 = (i + 1) / SEGMENTS
+            face.loops[0][uv_layer].uv = (u0, t0)
+            face.loops[1][uv_layer].uv = (u1, t0)
+            face.loops[2][uv_layer].uv = (u1, t1)
+            face.loops[3][uv_layer].uv = (u0, t1)
+
+        me = bpy.data.meshes.new(rname + "Mesh")
+        bm.to_mesh(me)
+        bm.free()
+        me.uv_layers[0].name = "UVMap"
+
+        ring = bpy.data.objects.new(rname, me)
+        bpy.context.collection.objects.link(ring)
+        ring.data.materials.append(
+            make_ring_material(ring_img, alpha_fallback=alpha, ring_name=rname)
+        )
+
+        bpy.ops.object.select_all(action='DESELECT')
+        ring.select_set(True)
+        bpy.context.view_layer.objects.active = ring
+        bpy.ops.object.shade_flat()
+        ring.parent = ring_parent
+
+    return ring_parent
+
+def setup_lighting():
+    bpy.ops.object.light_add(type='SUN', location=(100, -50, 30))
+    sun = bpy.context.active_object
+    sun.name = "Sun"
+    sun.data.energy = 7.0
+    sun.data.color  = (1.0, 0.97, 0.92)
+    sun.data.angle  = math.radians(0.27)
+    sun.data.use_shadow = True
+    sun.rotation_euler = (math.radians(35), math.radians(-20), math.radians(15))
+
+    bpy.ops.object.light_add(type='SUN', location=(-80, 40, -20))
+    fill = bpy.context.active_object
+    fill.name = "FillLight"
+    fill.data.energy = 0.80
+    fill.data.color  = (0.65, 0.75, 1.0)
+    fill.rotation_euler = (math.radians(-20), math.radians(160), 0)
+
+    bpy.ops.object.light_add(type='SUN', location=(80, 60, -15))
+    back = bpy.context.active_object
+    back.name = "RingScatter"
+    back.data.energy = 0.40
+    back.data.color  = (0.90, 0.85, 0.70)
+    back.rotation_euler = (math.radians(15), math.radians(145), 0)
+
+    bpy.ops.object.light_add(type='SUN', location=(-50, -50, 60))
+    top = bpy.context.active_object
+    top.name = "TopFill"
+    top.data.energy = 0.30
+    top.data.color  = (0.70, 0.76, 1.0)
+    top.rotation_euler = (math.radians(-45), math.radians(-45), 0)
+
+    bpy.ops.object.light_add(type='SUN', location=(0, 50, 0))
+    dark_fill = bpy.context.active_object
+    dark_fill.name = "DarkSideFill"
+    dark_fill.data.energy = 0.70
+    dark_fill.data.color  = (0.60, 0.70, 1.0)
+    dark_fill.data.angle  = math.radians(60)
+    dark_fill.rotation_euler = (math.radians(10), math.radians(170), 0)
+
+    bpy.ops.object.light_add(type='SUN', location=(0, 0, -60))
+    bot_fill = bpy.context.active_object
+    bot_fill.name = "BottomFill"
+    bot_fill.data.energy = 0.40
+    bot_fill.data.color  = (0.65, 0.72, 1.0)
+    bot_fill.data.angle  = math.radians(60)
+    bot_fill.rotation_euler = (math.radians(90), 0, 0)
+
+    bpy.ops.object.light_add(type='SUN', location=(60, 0, 0))
+    left_fill = bpy.context.active_object
+    left_fill.name = "LeftFill"
+    left_fill.data.energy = 0.35
+    left_fill.data.color  = (0.70, 0.78, 1.0)
+    left_fill.data.angle  = math.radians(60)
+    left_fill.rotation_euler = (0, math.radians(90), 0)
+
+def setup_camera():
+    bpy.ops.object.camera_add(location=(-5, -50, 18))
+    cam = bpy.context.active_object
+    cam.name = "MainCamera"
+    cam.data.lens     = 65
+    cam.data.clip_end = 1000
+
+    track = cam.constraints.new(type='TRACK_TO')
+    track.target     = bpy.data.objects["Saturn"]
+    track.track_axis = 'TRACK_NEGATIVE_Z'
+    track.up_axis    = 'UP_Y'
+
+    bpy.context.scene.camera = cam
+    return cam
+
+def setup_render_output():
+    scene = bpy.context.scene
+    scene.render.filepath = OUTPUT_PATH
+    scene.render.image_settings.file_format = 'FFMPEG'
+    ffmpeg = scene.render.ffmpeg
+    ffmpeg.format               = 'MPEG4'
+    ffmpeg.codec                = 'H264'
+    ffmpeg.constant_rate_factor = 'HIGH'
+    ffmpeg.ffmpeg_preset        = 'GOOD'
+    ffmpeg.audio_codec          = 'NONE'
+
+def setup_compositor():
+    scene = bpy.context.scene
+    scene.use_nodes = True
+    scene.render.use_compositing = True
+    nt = scene.node_tree
+    nt.nodes.clear()
+
+    rl   = nt.nodes.new('CompositorNodeRLayers')
+    comp = nt.nodes.new('CompositorNodeComposite')
+    view = nt.nodes.new('CompositorNodeViewer')
+
+    glare = nt.nodes.new('CompositorNodeGlare')
+    glare.glare_type = 'FOG_GLOW'
+    glare.quality    = 'HIGH'
+    glare.threshold  = 0.95
+    glare.size       = 4
+    glare.mix        = -0.90  # FIXED v10: was -0.80 — tighter, keeps stars pinpoint not bloomed grey
+
+    cb = nt.nodes.new('CompositorNodeColorBalance')
+    cb.correction_method = 'LIFT_GAMMA_GAIN'
+    cb.lift  = (0.98, 0.98, 1.04)  # FIXED v10: was (1.00,1.00,1.08) — that was greying the black floor
+    cb.gamma = (0.98, 0.98, 1.02)
+    cb.gain  = (1.00, 1.00, 1.00)
+
+    huesat = nt.nodes.new('CompositorNodeHueSat')
+    huesat.inputs['Hue'].default_value        = 0.515
+    huesat.inputs['Saturation'].default_value = 1.15  # FIXED v10: was 1.10 — richer star colors
+    huesat.inputs['Value'].default_value      = 1.20  # FIXED v10: was 1.15 — brighter overall
+
+    nt.links.new(rl.outputs['Image'],     huesat.inputs['Image'])
+    nt.links.new(huesat.outputs['Image'], glare.inputs['Image'])
+    nt.links.new(glare.outputs['Image'],  cb.inputs['Image'])
+    nt.links.new(cb.outputs['Image'],     comp.inputs['Image'])
+    nt.links.new(cb.outputs['Image'],     view.inputs['Image'])
+
+def main():
+    print("=== Saturn Scene Builder (v10 — Background Improved) ===")
+    print("Changes from v9:")
+    print("  BACKGROUND:")
+    print("    - HDR Strength:           1.2  → 2.0")
+    print("    - HDR Mapping rotation:   none → (0, 15°, 45°)")
+    print("    - Fallback black:  (0.001,0.001,0.005) → (0.0,0.0,0.002)")
+    print("    - Glare mix:             -0.80 → -0.90  (pinpoint stars)")
+    print("    - Color Balance lift: (1.00,1.00,1.08) → (0.98,0.98,1.04)  (true blacks)")
+    print("    - HueSat Saturation:      1.10 → 1.15")
+    print("    - HueSat Value:           1.15 → 1.20")
+    print("  STARFIELD (procedural fallback):")
+    print("    - White star emission:    1.8  → 2.8")
+    print("    - Blue star emission:     2.5  → 4.0")
+    print("    - Amber star emission:    2.2  → 3.5")
+    print("    - Red star emission:      3.5  → 5.5")
+    print("    - Bright star emission:   6.0  → 9.0")
+    print("    - Galaxy band emission:   0.25 → 0.40")
+    print("=" * 60)
+
+    clear_scene()
+    setup_scene()
+    if not os.path.isfile(HDR_PATH):
+        create_starfield()
+    saturn, tilt_empty = create_saturn()
+    create_rings(tilt_empty)
+    setup_lighting()
+    setup_camera()
+    setup_render_output()
+    setup_compositor()
+    bpy.context.scene.frame_set(1)
+    print(f"\nDone — frames 1-{TOTAL_FRAMES} ready.")
+    print(f"Output: {OUTPUT_PATH}.mp4")
+    print("Press Ctrl+F12 to render the animation.")
+
+main()
             </code></pre>
           </div>
 

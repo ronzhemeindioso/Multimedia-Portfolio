@@ -39,7 +39,7 @@
         <div class="script-video-inner">
           <div class="video-wrapper">
             <iframe
-              src="https://www.youtube.com/embed/wEPGZGUyFok"
+              src="https://www.youtube.com/embed/aWAiyPcyY5c"
               title="Pluto Blender Animation Demo"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -64,8 +64,446 @@
               </div>
             </div>
             <pre class="script-code" id="scriptCode"><code>
+import bpy
+import os
+import math
 
-codee hereee
+TEXTURE_PATH = r"add texture path here (e.g. C:/path/to/your/pluto_texture.jpg)"
+HDR_PATH     = r"add hdr path here (e.g. C:/path/to/your/hdr_image.hdr)"
+OUTPUT_PATH  = r"add output path here (e.g. C:/path/to/output/pluto_animation.mp4)"
+
+AXIAL_TILT_DEGREES = 122.53
+
+TOTAL_FRAMES = 480
+FPS          = 24
+
+# ── CLEAN SCENE ───────────────────────────────────────────────────────────────
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete(use_global=False)
+
+for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
+for block in bpy.data.materials: bpy.data.materials.remove(block)
+for block in bpy.data.images:    bpy.data.images.remove(block)
+for block in bpy.data.lights:    bpy.data.lights.remove(block)
+
+# ── PLUTO SPHERE ──────────────────────────────────────────────────────────────
+bpy.ops.mesh.primitive_uv_sphere_add(
+    segments=128,
+    ring_count=64,
+    radius=2.0,
+    location=(0, 0, 0)
+)
+pluto = bpy.context.active_object
+pluto.name = "Pluto"
+
+pluto.scale = (1.0, 1.0, 0.997)
+bpy.ops.object.transform_apply(scale=True)
+
+bpy.ops.object.shade_smooth()
+
+# NOTE: In Blender 4.x the old 'SMOOTH' modifier was replaced.
+# Use Smooth by Angle (via mesh normals) or the Smooth modifier with corrected type.
+bpy.ops.object.modifier_add(type='SMOOTH')
+pluto.modifiers["Smooth"].factor     = 0.5
+pluto.modifiers["Smooth"].iterations = 2
+
+# ── MATERIAL ──────────────────────────────────────────────────────────────────
+mat = bpy.data.materials.new(name="Pluto_Material")
+mat.use_nodes = True
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+nodes.clear()
+
+output = nodes.new("ShaderNodeOutputMaterial")
+output.location = (1100, 0)
+
+bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+bsdf.location = (750, 0)
+bsdf.inputs["Base Color"].default_value = (0.72, 0.62, 0.52, 1.0)  # pale tan fallback
+bsdf.inputs["Roughness"].default_value  = 0.92
+bsdf.inputs["Metallic"].default_value   = 0.0
+
+# "Specular IOR Level" is the Blender 4.x name for the specular input.
+# Use a try/except for safety across minor versions.
+try:
+    bsdf.inputs["Specular IOR Level"].default_value = 0.03
+except KeyError:
+    try:
+        bsdf.inputs["Specular"].default_value = 0.03
+    except KeyError:
+        pass  # Silently skip if neither key exists
+
+links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+
+tex_coord = nodes.new("ShaderNodeTexCoord")
+tex_coord.location = (-900, 0)
+
+mapping = nodes.new("ShaderNodeMapping")
+mapping.location = (-700, 0)
+mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
+
+# ── Color Texture ─────────────────────────────────────────────────────────────
+img_node = nodes.new("ShaderNodeTexImage")
+img_node.location      = (-400, 200)
+img_node.label         = "Pluto Color Map"
+img_node.interpolation = 'Linear'
+
+abs_path = bpy.path.abspath(TEXTURE_PATH)
+if os.path.exists(abs_path):
+    img = bpy.data.images.load(abs_path)
+    img_node.image = img
+    print(f"[Pluto] Texture loaded: {abs_path}")
+else:
+    print(f"[Pluto] WARNING – texture not found at: {abs_path}")
+
+links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
+# Texture goes through Hue/Sat correction before mixing — do NOT link directly to Base Color here
+
+# ── Hue / Saturation — tame the red/orange in the source texture ─────────────
+huesat = nodes.new("ShaderNodeHueSaturation")
+huesat.location = (-150, 200)
+huesat.label    = "Texture Correction"
+huesat.inputs["Hue"].default_value        = 0.50   # no hue shift needed — colors already accurate
+huesat.inputs["Saturation"].default_value = 0.90   # barely desaturate — texture is naturally muted
+huesat.inputs["Value"].default_value      = 1.08   # slight brightness boost
+links.new(img_node.outputs["Color"], huesat.inputs["Color"])
+
+# ── Terrain Noise ─────────────────────────────────────────────────────────────
+terrain_noise = nodes.new("ShaderNodeTexNoise")
+terrain_noise.location = (-400, -100)
+terrain_noise.label    = "Terrain Noise"
+terrain_noise.inputs["Scale"].default_value      = 5.0
+terrain_noise.inputs["Detail"].default_value     = 12.0
+terrain_noise.inputs["Roughness"].default_value  = 0.85
+terrain_noise.inputs["Distortion"].default_value = 0.5
+links.new(mapping.outputs["Vector"], terrain_noise.inputs["Vector"])
+
+# ── Fine surface detail ───────────────────────────────────────────────────────
+surface_noise = nodes.new("ShaderNodeTexNoise")
+surface_noise.location = (-400, -320)
+surface_noise.label    = "Surface Detail"
+surface_noise.inputs["Scale"].default_value      = 20.0
+surface_noise.inputs["Detail"].default_value     = 16.0
+surface_noise.inputs["Roughness"].default_value  = 0.90
+surface_noise.inputs["Distortion"].default_value = 0.2
+links.new(mapping.outputs["Vector"], surface_noise.inputs["Vector"])
+
+# ── Mix Noise — Blender 4.x: ShaderNodeMix replaces ShaderNodeMixRGB ─────────
+mix_noise = nodes.new("ShaderNodeMix")
+mix_noise.location   = (50, -200)
+mix_noise.data_type  = 'RGBA'           # required in Blender 4.x
+mix_noise.blend_type = "MIX"
+mix_noise.inputs["Factor"].default_value = 0.45
+links.new(terrain_noise.outputs["Fac"], mix_noise.inputs["A"])
+links.new(surface_noise.outputs["Fac"], mix_noise.inputs["B"])
+
+# ── Color Ramp ────────────────────────────────────────────────────────────────
+ramp_color = nodes.new("ShaderNodeValToRGB")
+ramp_color.location = (270, -150)
+ramp_color.label    = "Pluto Surface Color Ramp"
+ramp_color.color_ramp.elements[0].position = 0.10  # wider dark zone
+ramp_color.color_ramp.elements[0].color    = (0.32, 0.16, 0.10, 1)  # darker reddish-brown (tholins)
+ramp_color.color_ramp.elements[1].position = 0.90
+ramp_color.color_ramp.elements[1].color    = (0.90, 0.85, 0.78, 1)  # warm ivory plains
+ramp_color.color_ramp.elements.new(0.48)
+ramp_color.color_ramp.elements[1].color    = (0.65, 0.50, 0.38, 1)  # mid reddish-tan (tholin terrain)
+# ShaderNodeMix in RGBA mode outputs on "Result" (index 2)
+links.new(mix_noise.outputs["Result"], ramp_color.inputs["Fac"])
+
+# ── Mix texture with procedural color ─────────────────────────────────────────
+mix_tex = nodes.new("ShaderNodeMix")
+mix_tex.location   = (520, 100)
+mix_tex.data_type  = 'RGBA'
+mix_tex.blend_type = "MIX"           # changed OVERLAY→MIX: overlay was amplifying warmth
+mix_tex.inputs["Factor"].default_value = 0.15  # 85% texture, 15% procedural — texture leads
+links.new(huesat.outputs["Color"],      mix_tex.inputs["A"])   # corrected texture
+links.new(ramp_color.outputs["Color"],  mix_tex.inputs["B"])   # cool procedural ramp
+links.new(mix_tex.outputs["Result"],    bsdf.inputs["Base Color"])
+
+# ── Roughness ─────────────────────────────────────────────────────────────────
+ramp_rough = nodes.new("ShaderNodeValToRGB")
+ramp_rough.location = (270, -380)
+ramp_rough.label    = "Roughness Ramp"
+ramp_rough.color_ramp.elements[0].position = 0.2
+ramp_rough.color_ramp.elements[0].color    = (0.80, 0.80, 0.80, 1)
+ramp_rough.color_ramp.elements[1].position = 0.8
+ramp_rough.color_ramp.elements[1].color    = (0.95, 0.95, 0.95, 1)
+links.new(mix_noise.outputs["Result"],  ramp_rough.inputs["Fac"])
+# ramp_rough feeds ice roughness node as the rocky base — not directly to BSDF anymore
+# (ice roughness override node wires the final value to BSDF["Roughness"])
+
+# ── Bump ──────────────────────────────────────────────────────────────────────
+bump = nodes.new("ShaderNodeBump")
+bump.location = (270, -560)
+bump.inputs["Strength"].default_value  = 0.80  # increased for more visible terrain relief
+bump.inputs["Distance"].default_value  = 0.06
+links.new(mix_noise.outputs["Result"], bump.inputs["Height"])
+links.new(bump.outputs["Normal"],      bsdf.inputs["Normal"])
+
+# ── Tombaugh Regio (icy heart) — bright nitrogen ice patch ───────────────────
+# A large smooth noise at low scale creates continent-sized bright regions
+ice_noise = nodes.new("ShaderNodeTexNoise")
+ice_noise.location = (-400, -520)
+ice_noise.label    = "Ice Patch (Tombaugh Regio)"
+ice_noise.inputs["Scale"].default_value      = 1.4   # large blobs
+ice_noise.inputs["Detail"].default_value     = 3.0
+ice_noise.inputs["Roughness"].default_value  = 0.50
+ice_noise.inputs["Distortion"].default_value = 0.8
+links.new(mapping.outputs["Vector"], ice_noise.inputs["Vector"])
+
+ice_ramp = nodes.new("ShaderNodeValToRGB")
+ice_ramp.location = (-100, -520)
+ice_ramp.label    = "Ice Threshold"
+# Sharp threshold — only the brightest ~20% of noise becomes ice
+ice_ramp.color_ramp.interpolation = 'EASE'
+ice_ramp.color_ramp.elements[0].position = 0.72
+ice_ramp.color_ramp.elements[0].color    = (0.0, 0.0, 0.0, 1)   # not ice
+ice_ramp.color_ramp.elements[1].position = 0.92
+ice_ramp.color_ramp.elements[1].color    = (1.0, 1.0, 1.0, 1)   # pure white nitrogen ice
+links.new(ice_noise.outputs["Fac"], ice_ramp.inputs["Fac"])
+
+# Mix ice over the existing color — use ice mask as factor
+mix_ice = nodes.new("ShaderNodeMix")
+mix_ice.location  = (700, 100)
+mix_ice.data_type = 'RGBA'
+mix_ice.blend_type = 'MIX'
+mix_ice.inputs["Factor"].default_value = 0.0  # driven by ice_ramp below
+ice_color = (0.95, 0.93, 0.90, 1)  # warm white — nitrogen ice has slight cream tint
+
+# Use a second Mix to blend: ice_ramp drives Factor, bright white on top of mix_tex result
+mix_ice2 = nodes.new("ShaderNodeMix")
+mix_ice2.location  = (700, 200)
+mix_ice2.data_type = 'RGBA'
+mix_ice2.blend_type = 'MIX'
+links.new(ice_ramp.outputs["Color"],   mix_ice2.inputs["Factor"])
+links.new(mix_tex.outputs["Result"],   mix_ice2.inputs["A"])     # base Pluto color
+mix_ice2.inputs["B"].default_value = (0.95, 0.93, 0.90, 1)      # nitrogen ice color
+links.new(mix_ice2.outputs["Result"],  bsdf.inputs["Base Color"])
+
+# Also reduce roughness on ice patches (ice is smoother than rock)
+ramp_ice_rough = nodes.new("ShaderNodeValToRGB")
+ramp_ice_rough.location = (700, -200)
+ramp_ice_rough.label    = "Ice Roughness Override"
+ramp_ice_rough.color_ramp.elements[0].position = 0.0
+ramp_ice_rough.color_ramp.elements[0].color    = (0.92, 0.92, 0.92, 1)  # rocky = rough
+ramp_ice_rough.color_ramp.elements[1].position = 1.0
+ramp_ice_rough.color_ramp.elements[1].color    = (0.55, 0.55, 0.55, 1)  # ice = smoother
+links.new(ice_ramp.outputs["Color"],       ramp_ice_rough.inputs["Fac"])
+links.new(ramp_ice_rough.outputs["Color"], bsdf.inputs["Roughness"])
+
+pluto.data.materials.append(mat)
+
+# ── WORLD / BACKGROUND ───────────────────────────────────────────────────────
+world = bpy.data.worlds["World"]
+world.use_nodes = True
+world_nodes = world.node_tree.nodes
+world_links = world.node_tree.links
+world_nodes.clear()
+
+output_world = world_nodes.new("ShaderNodeOutputWorld")
+output_world.location = (900, 0)
+
+bg_ambient = world_nodes.new("ShaderNodeBackground")
+bg_ambient.location = (300, 100)
+bg_ambient.inputs["Color"].default_value    = (0.05, 0.05, 0.08, 1.0)
+bg_ambient.inputs["Strength"].default_value = 0.6
+
+img_tex = world_nodes.new("ShaderNodeTexImage")
+img_tex.location  = (-200, -150)
+img_tex.extension = 'EXTEND'
+
+abs_hdr_path = bpy.path.abspath(HDR_PATH)
+if os.path.exists(abs_hdr_path):
+    hdr_img = bpy.data.images.load(abs_hdr_path)
+    hdr_img.colorspace_settings.name = 'sRGB'
+    img_tex.image = hdr_img
+    print(f"[World] Background image loaded: {abs_hdr_path}")
+else:
+    print(f"[World] WARNING – HDR not found at: {abs_hdr_path}")
+
+tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
+tex_coord_world.location = (-600, -150)
+
+mapping_world = world_nodes.new("ShaderNodeMapping")
+mapping_world.location = (-400, -150)
+mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+
+world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
+world_links.new(mapping_world.outputs["Vector"],   img_tex.inputs["Vector"])
+
+bg_image = world_nodes.new("ShaderNodeBackground")
+bg_image.location = (300, -150)
+bg_image.inputs["Strength"].default_value = 1.0
+world_links.new(img_tex.outputs["Color"], bg_image.inputs["Color"])
+
+light_path = world_nodes.new("ShaderNodeLightPath")
+light_path.location = (300, 300)
+
+mix_shader = world_nodes.new("ShaderNodeMixShader")
+mix_shader.location = (650, 0)
+
+world_links.new(light_path.outputs["Is Camera Ray"], mix_shader.inputs["Fac"])
+world_links.new(bg_ambient.outputs["Background"],    mix_shader.inputs[1])
+world_links.new(bg_image.outputs["Background"],      mix_shader.inputs[2])
+world_links.new(mix_shader.outputs["Shader"],        output_world.inputs["Surface"])
+
+# ── LIGHTING ──────────────────────────────────────────────────────────────────
+
+bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
+sun = bpy.context.active_object
+sun.name = "Sun_Key"
+sun.data.energy    = 5.0
+sun.data.angle     = 0.53
+sun.data.color     = (0.92, 0.95, 1.0)
+sun.cycles.cast_shadow = False
+sun.rotation_euler = (1.5708, 0.0, -1.2)
+
+# Front fill
+bpy.ops.object.light_add(type='POINT', location=(-8, 4, 0))
+fill = bpy.context.active_object
+fill.name = "Space_Fill"
+fill.data.energy = 30.0   # ⬆ boosted
+fill.data.color  = (0.80, 0.85, 1.0)
+fill.data.shadow_soft_size = 15.0
+fill.cycles.cast_shadow = False
+
+# Back fill
+bpy.ops.object.light_add(type='POINT', location=(-8, -4, 0))
+fill2 = bpy.context.active_object
+fill2.name = "Space_Fill2"
+fill2.data.energy = 30.0   # ⬆ boosted
+fill2.data.color  = (0.80, 0.85, 1.0)
+fill2.data.shadow_soft_size = 15.0
+fill2.cycles.cast_shadow = False
+
+# Dark side fill — now very strong to fully eliminate shadow
+bpy.ops.object.light_add(type='AREA', location=(-10, 0, 0))
+back_fill = bpy.context.active_object
+back_fill.name = "Dark_Side_Fill"
+back_fill.data.energy        = 80.0   # ⬆ massively boosted to kill dark side
+back_fill.data.size          = 40.0   # larger = softer, more wrap-around
+back_fill.data.color         = (0.80, 0.85, 1.0)
+back_fill.cycles.cast_shadow = False
+back_fill.rotation_euler     = (0, 1.5708, 0)
+
+# Top fill — eliminates top/bottom shadowing
+bpy.ops.object.light_add(type='POINT', location=(0, 0, 10))
+top_fill = bpy.context.active_object
+top_fill.name = "Top_Fill"
+top_fill.data.energy = 25.0
+top_fill.data.color  = (0.80, 0.85, 1.0)
+top_fill.data.shadow_soft_size = 15.0
+top_fill.cycles.cast_shadow = False
+
+# Bottom fill
+bpy.ops.object.light_add(type='POINT', location=(0, 0, -10))
+bot_fill = bpy.context.active_object
+bot_fill.name = "Bottom_Fill"
+bot_fill.data.energy = 25.0
+bot_fill.data.color  = (0.80, 0.85, 1.0)
+bot_fill.data.shadow_soft_size = 15.0
+bot_fill.cycles.cast_shadow = False
+
+# Rim light
+bpy.ops.object.light_add(type='AREA', location=(-6, 0, 4))
+rim = bpy.context.active_object
+rim.name = "Rim_Light"
+rim.data.energy        = 8.0
+rim.data.size          = 10.0
+rim.data.color         = (0.65, 0.72, 0.90)
+rim.cycles.cast_shadow = False
+rim.rotation_euler     = (1.57, 0, 1.57)
+
+# ── CAMERA ────────────────────────────────────────────────────────────────────
+bpy.ops.object.camera_add(location=(0, -12, 0))
+cam = bpy.context.active_object
+cam.name = "Camera"
+cam.rotation_euler = (1.5708, 0.0, 0.0)
+cam.data.lens      = 50
+bpy.context.scene.camera = cam
+
+# ── RENDER SETTINGS ───────────────────────────────────────────────────────────
+scene = bpy.context.scene
+scene.render.engine        = 'CYCLES'
+scene.cycles.device        = 'GPU'
+scene.cycles.samples       = 128
+scene.cycles.use_denoising = True
+scene.cycles.denoiser      = 'OPENIMAGEDENOISE'
+
+scene.cycles.max_bounces             = 4
+scene.cycles.diffuse_bounces         = 2
+scene.cycles.glossy_bounces          = 2
+scene.cycles.transmission_bounces    = 4
+scene.cycles.volume_bounces          = 0
+scene.cycles.transparent_max_bounces = 4
+# NOTE: cycles.tile_size was removed in Blender 4.x (auto-tiling is now default)
+scene.render.use_persistent_data     = True
+
+scene.render.resolution_x          = 1920
+scene.render.resolution_y          = 1080
+scene.render.resolution_percentage = 100
+
+scene.view_settings.view_transform = 'Filmic'
+scene.view_settings.look           = 'Medium High Contrast'  # less crushing of shadows vs High Contrast
+scene.view_settings.exposure       = 0.0   # neutral — planet is bright enough from sun boost
+scene.view_settings.gamma          = 1.05  # very slight gamma lift to open up dark terrain
+
+scene.render.image_settings.file_format  = 'FFMPEG'
+scene.render.ffmpeg.format               = 'MPEG4'
+scene.render.ffmpeg.codec                = 'H264'
+scene.render.ffmpeg.constant_rate_factor = 'HIGH'
+scene.render.ffmpeg.ffmpeg_preset        = 'GOOD'
+scene.render.ffmpeg.audio_codec          = 'NONE'
+scene.render.filepath = OUTPUT_PATH
+
+# ── ANIMATION — SEAMLESS LOOP ─────────────────────────────────────────────────
+scene.frame_start = 1
+scene.frame_end   = TOTAL_FRAMES
+scene.render.fps  = FPS
+
+bpy.context.view_layer.objects.active = pluto
+pluto.select_set(True)
+
+axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
+
+print("\n" + "=" * 60)
+print("PLUTO ROTATION ANIMATION — SEAMLESS LOOP")
+print("=" * 60)
+print(f"Total frames         : {TOTAL_FRAMES}")
+print(f"Frame rate           : {FPS} fps")
+print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
+print(f"Rotation direction   : RETROGRADE (backwards)")
+print(f"Degrees traveled     : 360° (full seamless loop)")
+print(f"Speed vs Earth       : 2.0× slower (480 vs 240 frames)")
+print(f"Axial tilt           : {AXIAL_TILT_DEGREES}° (upside down like Venus)")
+print("=" * 60 + "\n")
+
+for frame_num in range(scene.frame_start, scene.frame_end + 1):
+    scene.frame_set(frame_num)
+
+    progress = (frame_num - 1) / TOTAL_FRAMES
+    total_rotation_radians = math.radians(progress * -360.0)
+
+    pluto.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
+
+    pluto.keyframe_insert(data_path="rotation_euler", index=0)
+    pluto.keyframe_insert(data_path="rotation_euler", index=2)
+
+for fc in pluto.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
+
+scene.frame_set(1)
+
+print("✓ Keyframes inserted with LINEAR interpolation (no easing pauses)")
+print(f"✓ Output: {OUTPUT_PATH}")
+print("\n" + "=" * 60)
+print("TO RENDER THE VIDEO:")
+print("=" * 60)
+print("  Render menu → Render Animation  (or Ctrl+F12)")
+print(f"  Output will be saved to: {OUTPUT_PATH}")
+print("=" * 60 + "\n")
             </code></pre>
           </div>
 

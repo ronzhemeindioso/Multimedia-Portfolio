@@ -39,7 +39,7 @@
         <div class="script-video-inner">
           <div class="video-wrapper">
             <iframe
-              src="https://www.youtube.com/embed/wEPGZGUyFok"
+              src="https://www.youtube.com/embed/8STvKM2vB-M"
               title="Neptune Blender Animation Demo"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -64,8 +64,350 @@
               </div>
             </div>
             <pre class="script-code" id="scriptCode"><code>
+import bpy
+import os
+import math
+import bmesh
 
-codee hereee
+TEXTURE_PATH = r"add texture path here (e.g. C:/path/to/your/neptune_texture.jpg)"
+HDR_PATH     = r"add hdr path here (e.g. C:/path/to/your/hdr_image.hdr)"
+OUTPUT_PATH  = r"add output path here (e.g. C:/path/to/output/neptune_animation.mp4)"
+
+AXIAL_TILT_DEGREES = 28.32
+
+TOTAL_FRAMES = 161
+FPS          = 24
+
+# ── CLEAN SCENE ───────────────────────────────────────────────────────────────
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete(use_global=False)
+
+for block in bpy.data.meshes:    bpy.data.meshes.remove(block)
+for block in bpy.data.materials: bpy.data.materials.remove(block)
+for block in bpy.data.images:    bpy.data.images.remove(block)
+for block in bpy.data.lights:    bpy.data.lights.remove(block)
+
+# ── NEPTUNE SPHERE ────────────────────────────────────────────────────────────
+bpy.ops.mesh.primitive_uv_sphere_add(
+    segments=128,
+    ring_count=64,
+    radius=2.0,
+    location=(0, 0, 0)
+)
+neptune = bpy.context.active_object
+neptune.name = "Neptune"
+
+neptune.scale = (1.0, 1.0, 0.983)
+bpy.ops.object.transform_apply(scale=True)
+
+bpy.ops.object.shade_smooth()
+
+bpy.ops.object.modifier_add(type='SMOOTH')
+neptune.modifiers["Smooth"].factor     = 1.0
+neptune.modifiers["Smooth"].iterations = 3
+
+# ── MATERIAL ──────────────────────────────────────────────────────────────────
+mat = bpy.data.materials.new(name="Neptune_Material")
+mat.use_nodes = True
+nodes = mat.node_tree.nodes
+links = mat.node_tree.links
+nodes.clear()
+
+output = nodes.new("ShaderNodeOutputMaterial")
+output.location = (1100, 0)
+
+bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+bsdf.location = (750, 0)
+bsdf.inputs["Base Color"].default_value         = (0.10, 0.25, 0.75, 1.0)
+bsdf.inputs["Roughness"].default_value          = 0.85
+bsdf.inputs["Metallic"].default_value           = 0.0
+# Blender 4.x: "Specular IOR Level" replaces the old "Specular" input
+bsdf.inputs["Specular IOR Level"].default_value = 0.01
+links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+
+tex_coord = nodes.new("ShaderNodeTexCoord")
+tex_coord.location = (-900, 0)
+
+mapping = nodes.new("ShaderNodeMapping")
+mapping.location = (-700, 0)
+mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+links.new(tex_coord.outputs["UV"], mapping.inputs["Vector"])
+bsdf.inputs["Specular IOR Level"].default_value = 0.0   # was 0.01 — kill it entirely
+bsdf.inputs["Roughness"].default_value          = 0.90  # was 0.85
+
+# ── Color Texture ─────────────────────────────────────────────────────────────
+img_node = nodes.new("ShaderNodeTexImage")
+img_node.location      = (-400, 200)
+img_node.label         = "Neptune Color Map"
+img_node.interpolation = 'Linear'
+
+abs_path = bpy.path.abspath(TEXTURE_PATH)
+if os.path.exists(abs_path):
+    img = bpy.data.images.load(abs_path)
+    img_node.image = img
+    print(f"[Neptune] Texture loaded: {abs_path}")
+else:
+    print(f"[Neptune] WARNING – texture not found at: {abs_path}")
+
+links.new(mapping.outputs["Vector"], img_node.inputs["Vector"])
+links.new(img_node.outputs["Color"], bsdf.inputs["Base Color"])
+
+# ── Storm Noise ───────────────────────────────────────────────────────────────
+storm_noise = nodes.new("ShaderNodeTexNoise")
+storm_noise.location = (-400, -100)
+storm_noise.label    = "Storm System Noise"
+storm_noise.inputs["Scale"].default_value      = 3.5
+storm_noise.inputs["Detail"].default_value     = 14.0
+storm_noise.inputs["Roughness"].default_value  = 0.70
+storm_noise.inputs["Distortion"].default_value = 1.2
+links.new(mapping.outputs["Vector"], storm_noise.inputs["Vector"])
+
+# ── Fine cloud streaks ────────────────────────────────────────────────────────
+wind_noise = nodes.new("ShaderNodeTexNoise")
+wind_noise.location = (-400, -320)
+wind_noise.label    = "Wind Band Noise"
+wind_noise.inputs["Scale"].default_value      = 8.0
+wind_noise.inputs["Detail"].default_value     = 16.0
+wind_noise.inputs["Roughness"].default_value  = 0.65
+wind_noise.inputs["Distortion"].default_value = 0.8
+links.new(mapping.outputs["Vector"], wind_noise.inputs["Vector"])
+
+# ── Mix Noise ─────────────────────────────────────────────────────────────────
+# BLENDER 4.x: ShaderNodeMixRGB was removed. Use ShaderNodeMix with data_type='RGBA'.
+mix_noise = nodes.new("ShaderNodeMix")
+mix_noise.location   = (50, -200)
+mix_noise.data_type  = 'RGBA'           # must be set before blend_type
+mix_noise.blend_type = "MIX"
+mix_noise.inputs["Factor"].default_value = 0.40
+links.new(storm_noise.outputs["Fac"], mix_noise.inputs["A"])
+links.new(wind_noise.outputs["Fac"],  mix_noise.inputs["B"])
+
+# ── Color Ramp ────────────────────────────────────────────────────────────────
+ramp_color = nodes.new("ShaderNodeValToRGB")
+ramp_color.location = (270, -150)
+ramp_color.label    = "Neptune Color Ramp"
+ramp_color.color_ramp.elements[0].position = 0.2
+ramp_color.color_ramp.elements[0].color    = (0.05, 0.12, 0.55, 1)
+ramp_color.color_ramp.elements[1].position = 0.8
+ramp_color.color_ramp.elements[1].color    = (0.18, 0.42, 0.90, 1)
+# ShaderNodeMix RGBA output is "Result" (not "Color")
+links.new(mix_noise.outputs["Result"], ramp_color.inputs["Fac"])
+
+# ── Mix texture with storm color variation ────────────────────────────────────
+# BLENDER 4.x: ShaderNodeMixRGB → ShaderNodeMix with data_type='RGBA'
+mix_tex = nodes.new("ShaderNodeMix")
+mix_tex.location   = (520, 100)
+mix_tex.data_type  = 'RGBA'
+mix_tex.blend_type = "OVERLAY"
+mix_tex.inputs["Factor"].default_value = 0.25
+links.new(img_node.outputs["Color"],   mix_tex.inputs["A"])
+links.new(ramp_color.outputs["Color"], mix_tex.inputs["B"])
+links.new(mix_tex.outputs["Result"],   bsdf.inputs["Base Color"])
+
+# ── Roughness Ramp ────────────────────────────────────────────────────────────
+ramp_rough = nodes.new("ShaderNodeValToRGB")
+ramp_rough.location = (270, -380)
+ramp_rough.label    = "Roughness Ramp"
+ramp_rough.color_ramp.elements[0].position = 0.3
+ramp_rough.color_ramp.elements[0].color    = (0.30, 0.30, 0.30, 1)
+ramp_rough.color_ramp.elements[1].position = 0.7
+ramp_rough.color_ramp.elements[1].color    = (0.45, 0.45, 0.45, 1)
+links.new(mix_noise.outputs["Result"],  ramp_rough.inputs["Fac"])
+links.new(ramp_rough.outputs["Color"], bsdf.inputs["Roughness"])
+
+# ── Bump ──────────────────────────────────────────────────────────────────────
+bump = nodes.new("ShaderNodeBump")
+bump.location = (270, -560)
+bump.inputs["Strength"].default_value  = 0.03
+bump.inputs["Distance"].default_value  = 0.01
+links.new(mix_noise.outputs["Result"], bump.inputs["Height"])
+links.new(bump.outputs["Normal"],      bsdf.inputs["Normal"])
+
+neptune.data.materials.append(mat)
+
+# ── WORLD / BACKGROUND ───────────────────────────────────────────────────────
+world = bpy.data.worlds["World"]
+world.use_nodes = True
+world_nodes = world.node_tree.nodes
+world_links = world.node_tree.links
+world_nodes.clear()
+
+output_world = world_nodes.new("ShaderNodeOutputWorld")
+output_world.location = (900, 0)
+
+bg_ambient = world_nodes.new("ShaderNodeBackground")
+bg_ambient.location = (300, 100)
+bg_ambient.inputs["Color"].default_value    = (0.05, 0.05, 0.10, 1.0)
+bg_ambient.inputs["Strength"].default_value = 0.4
+
+img_tex = world_nodes.new("ShaderNodeTexImage")
+img_tex.location  = (-200, -150)
+img_tex.extension = 'EXTEND'
+
+abs_hdr_path = bpy.path.abspath(HDR_PATH)
+if os.path.exists(abs_hdr_path):
+    hdr_img = bpy.data.images.load(abs_hdr_path)
+    hdr_img.colorspace_settings.name = 'sRGB'
+    img_tex.image = hdr_img
+    print(f"[World] Background image loaded: {abs_hdr_path}")
+else:
+    print(f"[World] WARNING – HDR not found at: {abs_hdr_path}")
+
+tex_coord_world = world_nodes.new("ShaderNodeTexCoord")
+tex_coord_world.location = (-600, -150)
+
+mapping_world = world_nodes.new("ShaderNodeMapping")
+mapping_world.location = (-400, -150)
+mapping_world.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+
+world_links.new(tex_coord_world.outputs["Window"], mapping_world.inputs["Vector"])
+world_links.new(mapping_world.outputs["Vector"],   img_tex.inputs["Vector"])
+
+bg_image = world_nodes.new("ShaderNodeBackground")
+bg_image.location = (300, -150)
+bg_image.inputs["Strength"].default_value = 1.0
+world_links.new(img_tex.outputs["Color"], bg_image.inputs["Color"])
+
+light_path = world_nodes.new("ShaderNodeLightPath")
+light_path.location = (300, 300)
+
+mix_shader = world_nodes.new("ShaderNodeMixShader")
+mix_shader.location = (650, 0)
+
+world_links.new(light_path.outputs["Is Camera Ray"], mix_shader.inputs["Fac"])
+world_links.new(bg_ambient.outputs["Background"],    mix_shader.inputs[1])
+world_links.new(bg_image.outputs["Background"],      mix_shader.inputs[2])
+world_links.new(mix_shader.outputs["Shader"],        output_world.inputs["Surface"])
+
+# ── LIGHTING ──────────────────────────────────────────────────────────────────
+bpy.ops.object.light_add(type='SUN', location=(10, -6, 0))
+sun = bpy.context.active_object
+sun.name = "Sun_Key"
+sun.data.energy    = 6.0          # was 8.0
+sun.data.angle     = 2.5
+sun.data.color     = (0.95, 0.98, 1.0)
+sun.rotation_euler = (1.5708, 0.4, -1.0)
+
+bpy.ops.object.light_add(type='POINT', location=(-10, -5, 3))  # pushed behind
+fill = bpy.context.active_object
+fill.name = "Space_Fill"
+fill.data.energy           = 0.15   # was 0.3 — much dimmer
+fill.data.color            = (0.20, 0.35, 0.80)
+fill.data.shadow_soft_size = 20.0
+
+# Rim light DISABLED — remove or set to near zero
+bpy.ops.object.light_add(type='AREA', location=(-6, -8, 5))  # behind the planet
+rim = bpy.context.active_object
+rim.name = "Rim_Light"
+rim.data.energy    = 0.5           # was 3.0
+rim.data.size      = 6.0
+rim.data.color     = (0.10, 0.20, 0.70)
+rim.rotation_euler = (1.57, 0, 1.57)
+
+# ── CAMERA ────────────────────────────────────────────────────────────────────
+bpy.ops.object.camera_add(location=(0, 20, 0))
+cam = bpy.context.active_object
+cam.name = "Camera"
+cam.rotation_euler = (math.radians(90), 0.0, math.radians(180))
+cam.data.lens = 85
+bpy.context.scene.camera = cam
+
+# ── RENDER SETTINGS ───────────────────────────────────────────────────────────
+scene = bpy.context.scene
+scene.render.engine        = 'CYCLES'
+scene.cycles.device        = 'GPU'
+scene.cycles.samples       = 128
+scene.cycles.use_denoising = True
+scene.cycles.denoiser      = 'OPENIMAGEDENOISE'
+
+scene.cycles.max_bounces             = 4
+scene.cycles.diffuse_bounces         = 2
+scene.cycles.glossy_bounces          = 2
+scene.cycles.transmission_bounces    = 4
+scene.cycles.volume_bounces          = 0
+scene.cycles.transparent_max_bounces = 4
+
+scene.render.use_persistent_data     = True
+
+scene.render.resolution_x          = 1920
+scene.render.resolution_y          = 1080
+scene.render.resolution_percentage = 100
+
+scene.view_settings.view_transform = 'Filmic'
+scene.view_settings.look           = 'Medium High Contrast'
+scene.view_settings.exposure       = 0.3
+scene.view_settings.gamma          = 1.0
+
+scene.render.image_settings.file_format  = 'FFMPEG'
+scene.render.ffmpeg.format               = 'MPEG4'
+scene.render.ffmpeg.codec                = 'H264'
+scene.render.ffmpeg.constant_rate_factor = 'HIGH'
+scene.render.ffmpeg.ffmpeg_preset        = 'GOOD'
+scene.render.ffmpeg.audio_codec          = 'NONE'
+scene.render.filepath = OUTPUT_PATH
+
+# ── ANIMATION — SEAMLESS LOOP ─────────────────────────────────────────────────
+scene.frame_start = 1
+scene.frame_end   = TOTAL_FRAMES
+scene.render.fps  = FPS
+
+# ── ROTATION FIX: Use a parent Empty to separate tilt from spin ───────────────
+bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
+tilt_empty = bpy.context.active_object
+tilt_empty.name = "Neptune_Tilt"
+
+axial_tilt_radians = math.radians(AXIAL_TILT_DEGREES)
+tilt_empty.rotation_euler = (0.0, axial_tilt_radians, 0.0)
+
+neptune.parent = tilt_empty
+neptune.matrix_parent_inverse = tilt_empty.matrix_world.inverted()
+
+neptune.rotation_euler = (0.0, 0.0, 0.0)
+
+bpy.context.view_layer.objects.active = neptune
+neptune.select_set(True)
+
+print("\n" + "=" * 60)
+print("NEPTUNE ROTATION ANIMATION — SEAMLESS LOOP")
+print("=" * 60)
+print(f"Total frames         : {TOTAL_FRAMES}")
+print(f"Frame rate           : {FPS} fps")
+print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
+print(f"Degrees traveled     : 360° (full seamless loop)")
+print(f"Speed vs Earth       : faster (161 vs 240 frames)")
+print(f"Speed vs Uranus      : slightly faster (161 vs 173 frames)")
+print(f"Axial tilt           : {AXIAL_TILT_DEGREES}°")
+print("=" * 60 + "\n")
+
+for frame_num in range(scene.frame_start, scene.frame_end + 1):
+    scene.frame_set(frame_num)
+
+    progress = (frame_num - 1) / (TOTAL_FRAMES - 1)
+    # Positive rotation = prograde (counterclockwise from above north pole)
+    total_rotation_radians = math.radians(progress * 360.0)
+
+    neptune.rotation_euler = (0.0, 0.0, total_rotation_radians)
+
+    # Only keyframe Z axis (the only axis that changes)
+    neptune.keyframe_insert(data_path="rotation_euler", index=2)
+
+for fc in neptune.animation_data.action.fcurves:
+    for kp in fc.keyframe_points:
+        kp.interpolation = 'LINEAR'
+
+scene.frame_set(1)
+
+print("✓ Axial tilt applied to parent Empty (Y-axis), Neptune spins on local Z")
+print("✓ Prograde rotation (counterclockwise from north pole) — correct for Neptune")
+print("✓ Keyframes inserted with LINEAR interpolation (no easing pauses)")
+print("✓ progress denominator fixed to (TOTAL_FRAMES - 1) for exact 360° coverage")
+print(f"✓ Output: {OUTPUT_PATH}")
+print("\n" + "=" * 60)
+print("TO RENDER THE VIDEO:")
+print("=" * 60)
+print("  Render menu → Render Animation  (or Ctrl+F12)")
+print(f"  Output will be saved to: {OUTPUT_PATH}")
+print("=" * 60 + "\n")
             </code></pre>
           </div>
 
