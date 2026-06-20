@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Script – Ronz Portfolio</title>
+  <title>Sun Script – Ronz Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
@@ -30,8 +30,22 @@
       <section class="script-hero" aria-label="Script detail hero">
         <div class="script-hero-inner">
           <span class="project-label">Python / Blender Script</span>
-          <h1 class="script-title">Earth – Blender Script</h1>
-          <p class="script-subtitle">The Python script used inside Blender to animate and configure Earth's orbital motion and rotation.</p>
+          <h1 class="script-title">Sun – Blender Script</h1>
+          <p class="script-subtitle">The Python script used inside Blender to animate and configure the Sun's rotation and surface emission.</p>
+        </div>
+      </section>
+
+      <section class="script-video" aria-labelledby="video-heading">
+        <div class="script-video-inner">
+          <div class="video-wrapper">
+            <iframe
+              src="https://www.youtube.com/embed/YOUR_SUN_VIDEO_ID_HERE"
+              title="Sun Blender Animation Demo"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          </div>
         </div>
       </section>
 
@@ -42,11 +56,11 @@
             <div class="script-block-header">
               <div class="script-block-header-left">
                 <span class="script-lang-dot" aria-hidden="true"></span>
-                <span class="script-filename">earth.py</span>
+                <span class="script-filename">sun.py</span>
               </div>
               <div class="script-block-header-right">
                 <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy script to clipboard">Copy</button>
-                <a class="download-btn" id="downloadBtn" href="#" aria-label="Download earth.py script">Download</a>
+                <a class="download-btn" id="downloadBtn" href="#" aria-label="Download sun.py script">Download</a>
               </div>
             </div>
             <pre class="script-code" id="scriptCode"><code>
@@ -330,8 +344,8 @@ print("=" * 60 + "\n")
           <div class="script-notes" aria-labelledby="notes-heading">
             <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
             <ul class="script-notes-list">
-              <li>Replace the placeholder code above with your actual Blender Python script.</li>
-              <li>The orbital period of Earth is 365.25 Earth days.</li>
+              <li>Set TEXTURE_PATH, HDR_PATH, and OUTPUT_PATH to your actual file paths before running.</li>
+              <li>The Sun completes one rotation approximately every 25–35 Earth days depending on latitude (differential rotation).</li>
               <li>Distance is scaled for visualization — not true astronomical units.</li>
             </ul>
           </div>
@@ -342,10 +356,10 @@ print("=" * 60 + "\n")
     </div>
   </main>
 
-<footer class="project-footer" role="contentinfo">
-  <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
-  <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
-</footer>
+  <footer class="project-footer" role="contentinfo">
+    <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+  </footer>
 
   <script>
     (function () {
@@ -374,7 +388,7 @@ print("=" * 60 + "\n")
           var url = URL.createObjectURL(blob);
           var a = document.createElement('a');
           a.href = url;
-          a.download = 'earth.py';
+          a.download = 'sun.py';
           a.click();
           URL.revokeObjectURL(url);
         });

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Script – Ronz Portfolio</title>
+  <title>Saturn Script – Ronz Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
@@ -35,7 +35,7 @@
         </div>
       </section>
 
-       <section class="script-video" aria-labelledby="video-heading">
+      <section class="script-video" aria-labelledby="video-heading">
         <div class="script-video-inner">
           <div class="video-wrapper">
             <iframe
@@ -71,10 +71,10 @@ import os
 # ─────────────────────────────────────────────
 # CONFIGURATION — absolute paths
 # ─────────────────────────────────────────────
-HDR_PATH       = add hdr path here (e.g. "C:/path/to/your/hdr_image.hdr")
-SATURN_TEXTURE = add saturn texture path here (e.g. "C:/path/to/your/saturn_texture.jpg")
-RING_TEXTURE   = add ring texture path here (e.g. "C:/path/to/your/saturn_ring_texture.png")
-OUTPUT_PATH    = add output path here (e.g. "C:/path/to/output/saturn_animation.mp4")
+HDR_PATH       = "add hdr path here (e.g. C:/path/to/your/hdr_image.hdr)"
+SATURN_TEXTURE = "add saturn texture path here (e.g. C:/path/to/your/saturn_texture.jpg)"
+RING_TEXTURE   = "add ring texture path here (e.g. C:/path/to/your/saturn_ring_texture.png)"
+OUTPUT_PATH    = "add output path here (e.g. C:/path/to/output/saturn_animation.mp4)"
 
 # ─────────────────────────────────────────────
 # SCIENTIFIC VALUES
@@ -127,8 +127,7 @@ def setup_scene():
     if os.path.isfile(HDR_PATH):
         hdr_img = bpy.data.images.load(HDR_PATH)
         env_node.image = hdr_img
-        bg_node.inputs['Strength'].default_value = 2.0  # FIXED v10: was 1.2 — punches stars out of grey
-        # Rotate HDR so brightest star clusters aren't dead-center
+        bg_node.inputs['Strength'].default_value = 2.0
         map_node.inputs['Rotation'].default_value = (0.0, math.radians(15), math.radians(45))
         wnt.links.new(coord_node.outputs['Generated'], map_node.inputs['Vector'])
         wnt.links.new(map_node.outputs['Vector'],      env_node.inputs['Vector'])
@@ -136,7 +135,7 @@ def setup_scene():
         print(f"[OK] HDR loaded: {HDR_PATH}")
     else:
         print(f"[WARNING] HDR not found — using dark fallback + procedural stars")
-        bg_node.inputs['Color'].default_value    = (0.0, 0.0, 0.002, 1.0)  # FIXED v10: true black, was (0.001,0.001,0.005)
+        bg_node.inputs['Color'].default_value    = (0.0, 0.0, 0.002, 1.0)
         bg_node.inputs['Strength'].default_value = 1.0
     wnt.links.new(bg_node.outputs['Background'], out_node.inputs['Surface'])
 
@@ -144,13 +143,12 @@ def create_starfield():
     import random, bmesh
     random.seed(42)
 
-    # FIXED v10: emission strengths boosted +50-60% so stars survive compositor processing
     star_configs = [
-        (1800, (1.0,  1.0,  1.0,  1.0), 2.8, "Stars_White"),   # was 1.8
-        (350,  (0.72, 0.82, 1.0,  1.0), 4.0, "Stars_Blue"),    # was 2.5
-        (220,  (1.0,  0.88, 0.62, 1.0), 3.5, "Stars_Amber"),   # was 2.2
-        (90,   (1.0,  0.52, 0.42, 1.0), 5.5, "Stars_Red"),     # was 3.5
-        (25,   (0.92, 1.0,  0.88, 1.0), 9.0, "Stars_Bright"),  # was 6.0
+        (1800, (1.0,  1.0,  1.0,  1.0), 2.8, "Stars_White"),
+        (350,  (0.72, 0.82, 1.0,  1.0), 4.0, "Stars_Blue"),
+        (220,  (1.0,  0.88, 0.62, 1.0), 3.5, "Stars_Amber"),
+        (90,   (1.0,  0.52, 0.42, 1.0), 5.5, "Stars_Red"),
+        (25,   (0.92, 1.0,  0.88, 1.0), 9.0, "Stars_Bright"),
     ]
 
     for count, color, strength, obj_name in star_configs:
@@ -196,7 +194,7 @@ def create_starfield():
     mat_gal.node_tree.nodes.clear()
     emit_gal = mat_gal.node_tree.nodes.new('ShaderNodeEmission')
     emit_gal.inputs['Color'].default_value    = (0.80, 0.85, 1.0, 1.0)
-    emit_gal.inputs['Strength'].default_value = 0.40  # FIXED v10: was 0.25
+    emit_gal.inputs['Strength'].default_value = 0.40
     out_gal = mat_gal.node_tree.nodes.new('ShaderNodeOutputMaterial')
     mat_gal.node_tree.links.new(emit_gal.outputs['Emission'], out_gal.inputs['Surface'])
     me_gal.materials.append(mat_gal)
@@ -648,18 +646,18 @@ def setup_compositor():
     glare.quality    = 'HIGH'
     glare.threshold  = 0.95
     glare.size       = 4
-    glare.mix        = -0.90  # FIXED v10: was -0.80 — tighter, keeps stars pinpoint not bloomed grey
+    glare.mix        = -0.90
 
     cb = nt.nodes.new('CompositorNodeColorBalance')
     cb.correction_method = 'LIFT_GAMMA_GAIN'
-    cb.lift  = (0.98, 0.98, 1.04)  # FIXED v10: was (1.00,1.00,1.08) — that was greying the black floor
+    cb.lift  = (0.98, 0.98, 1.04)
     cb.gamma = (0.98, 0.98, 1.02)
     cb.gain  = (1.00, 1.00, 1.00)
 
     huesat = nt.nodes.new('CompositorNodeHueSat')
     huesat.inputs['Hue'].default_value        = 0.515
-    huesat.inputs['Saturation'].default_value = 1.15  # FIXED v10: was 1.10 — richer star colors
-    huesat.inputs['Value'].default_value      = 1.20  # FIXED v10: was 1.15 — brighter overall
+    huesat.inputs['Saturation'].default_value = 1.15
+    huesat.inputs['Value'].default_value      = 1.20
 
     nt.links.new(rl.outputs['Image'],     huesat.inputs['Image'])
     nt.links.new(huesat.outputs['Image'], glare.inputs['Image'])
@@ -668,25 +666,7 @@ def setup_compositor():
     nt.links.new(cb.outputs['Image'],     view.inputs['Image'])
 
 def main():
-    print("=== Saturn Scene Builder (v10 — Background Improved) ===")
-    print("Changes from v9:")
-    print("  BACKGROUND:")
-    print("    - HDR Strength:           1.2  → 2.0")
-    print("    - HDR Mapping rotation:   none → (0, 15°, 45°)")
-    print("    - Fallback black:  (0.001,0.001,0.005) → (0.0,0.0,0.002)")
-    print("    - Glare mix:             -0.80 → -0.90  (pinpoint stars)")
-    print("    - Color Balance lift: (1.00,1.00,1.08) → (0.98,0.98,1.04)  (true blacks)")
-    print("    - HueSat Saturation:      1.10 → 1.15")
-    print("    - HueSat Value:           1.15 → 1.20")
-    print("  STARFIELD (procedural fallback):")
-    print("    - White star emission:    1.8  → 2.8")
-    print("    - Blue star emission:     2.5  → 4.0")
-    print("    - Amber star emission:    2.2  → 3.5")
-    print("    - Red star emission:      3.5  → 5.5")
-    print("    - Bright star emission:   6.0  → 9.0")
-    print("    - Galaxy band emission:   0.25 → 0.40")
-    print("=" * 60)
-
+    print("=== Saturn Scene Builder ===")
     clear_scene()
     setup_scene()
     if not os.path.isfile(HDR_PATH):
@@ -709,7 +689,7 @@ main()
           <div class="script-notes" aria-labelledby="notes-heading">
             <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
             <ul class="script-notes-list">
-              <li>Replace the placeholder code above with your actual Blender Python script.</li>
+              <li>Set HDR_PATH, SATURN_TEXTURE, RING_TEXTURE, and OUTPUT_PATH to your actual file paths before running.</li>
               <li>The orbital period of Saturn is 29.4 Earth years, the second longest of all planets.</li>
               <li>Distance is scaled for visualization — not true astronomical units.</li>
             </ul>
@@ -721,10 +701,10 @@ main()
     </div>
   </main>
 
-<footer class="project-footer" role="contentinfo">
-  <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
-  <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
-</footer>
+  <footer class="project-footer" role="contentinfo">
+    <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+  </footer>
 
   <script>
     (function () {

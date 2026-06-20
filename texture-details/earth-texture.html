@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Earth Texture – Ronz Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&family=Source+Code+Pro&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../texture-detail.css"/>
+</head>
+<body>
+
+  <nav role="navigation" aria-label="Main navigation">
+    <div class="nav-logo">
+      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
+      Multimedia Portfolio
+    </div>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../about.html">About</a></li>
+    </ul>
+  </nav>
+
+  <main id="main-content">
+
+    <section class="script-hero" aria-label="Texture detail hero">
+      <span class="project-label">Texture / Image Asset</span>
+      <h1 class="script-title">Earth – Diffuse Texture</h1>
+      <p class="script-subtitle">The color map applied to Earth's surface material in Blender, covering continents, oceans, and cloud cover in equirectangular projection.</p>
+    </section>
+
+    <!-- Optional video demo. Delete this whole <section> if a planet has no video. -->
+    <section class="script-video" aria-label="Video demo">
+      <div class="video-wrapper">
+        <iframe
+          src="https://www.youtube.com/embed/YJ63IHmWDhg"
+          title="Earth Blender Animation Demo"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </section>
+
+    <section class="script-section" aria-labelledby="texture-heading">
+
+      <div class="script-block">
+        <div class="script-block-header">
+          <div class="script-block-header-left">
+            <span class="script-lang-dot" aria-hidden="true"></span>
+            <span class="script-filename">earth_diffuse_4k.jpg</span>
+          </div>
+          <div class="script-block-header-right">
+            <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy image link to clipboard">Copy Link</button>
+            <a class="download-btn" id="downloadBtn" href="https://placehold.co/2048x1024/1a3a6b/2d5f3a?text=Earth+Texture+Placeholder" download="earth_diffuse_4k.jpg" aria-label="Download texture image">Download</a>
+          </div>
+        </div>
+
+        <div class="texture-preview-wrap">
+          <img
+            id="textureImg"
+            class="texture-preview-img"
+            src="https://placehold.co/2048x1024/1a3a6b/2d5f3a?text=Earth+Texture+Placeholder"
+            alt="Earth diffuse texture preview"
+          />
+        </div>
+
+        <div class="texture-meta-row">
+          <div class="texture-meta-item">
+            <span class="texture-meta-label">Format</span>
+            <span class="texture-meta-value">JPG</span>
+          </div>
+          <div class="texture-meta-item">
+            <span class="texture-meta-label">Resolution</span>
+            <span class="texture-meta-value">2048 × 1024</span>
+          </div>
+          <div class="texture-meta-item">
+            <span class="texture-meta-label">Projection</span>
+            <span class="texture-meta-value">Equirectangular</span>
+          </div>
+          <div class="texture-meta-item">
+            <span class="texture-meta-label">File Size</span>
+            <span class="texture-meta-value" id="fileSizeValue">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="script-notes" aria-labelledby="notes-heading">
+        <h2 id="notes-heading" class="script-notes-title">Texture Notes</h2>
+        <ul class="script-notes-list">
+          <li>Replace the placeholder image above with your actual Earth diffuse texture.</li>
+          <li>Used as the <code>EARTH_TEXTURE_PATH</code> input referenced in <code>earth.py</code> when assigning Earth's surface material.</li>
+          <li>Map this image onto a UV sphere using an equirectangular (lat/long) projection.</li>
+          <li>For higher-fidelity renders, pair with a separate normal/bump map.</li>
+        </ul>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="project-footer" role="contentinfo">
+    <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var copyBtn = document.getElementById('copyBtn');
+      var img = document.getElementById('textureImg');
+      var fileSizeValue = document.getElementById('fileSizeValue');
+
+      if (copyBtn && img) {
+        copyBtn.addEventListener('click', function () {
+          navigator.clipboard.writeText(img.src).then(function () {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(function () { copyBtn.textContent = 'Copy Link'; }, 2000);
+          }).catch(function () {
+            copyBtn.textContent = 'Failed';
+            setTimeout(function () { copyBtn.textContent = 'Copy Link'; }, 2000);
+          });
+        });
+      }
+
+      if (img && fileSizeValue) {
+        fetch(img.src, { method: 'HEAD' })
+          .then(function (res) {
+            var len = res.headers.get('content-length');
+            if (len) {
+              var kb = parseInt(len, 10) / 1024;
+              fileSizeValue.textContent = kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.round(kb) + ' KB';
+            } else {
+              fileSizeValue.textContent = 'n/a';
+            }
+          })
+          .catch(function () { fileSizeValue.textContent = 'n/a'; });
+      }
+
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,293 @@
+/* ============================================
+   texture-detail.css
+   Shared template for all texture/image asset
+   detail pages (Earth, Mars, Moon, etc.)
+   Link this file from any planet's texture page.
+   ============================================ */
+
+:root{
+  --bg: #0d0a05;
+  --panel: #1c1408;
+  --panel-border: #3a2a0c;
+  --header-bar: #241a07;
+  --gold: #e8a93a;
+  --gold-soft: #c98f2e;
+  --text-main: #f3efe6;
+  --text-dim: #b9b2a4;
+  --text-faint: #8a8275;
+  --mono: "Source Code Pro", Consolas, "Courier New", monospace;
+  --sans: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --serif: "Playfair Display", Georgia, serif;
+}
+
+/* ---------- BASE ---------- */
+body{
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: var(--sans);
+  margin: 0;
+}
+
+#main-content{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 100px;
+}
+
+/* ---------- NAV ---------- */
+nav[role="navigation"]{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nav-logo{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.nav-sun{ flex-shrink: 0; }
+.nav-links{
+  display: flex;
+  gap: 36px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-links a{
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.nav-links a:hover{ color: var(--text-main); }
+
+/* ---------- HERO ---------- */
+.script-hero{
+  padding: 56px 0 28px;
+}
+.project-label{
+  display: block;
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+.script-title{
+  font-family: var(--serif);
+  font-size: 2.8rem;
+  line-height: 1.15;
+  margin: 0 0 18px 0;
+  color: #fbf8f1;
+}
+.script-subtitle{
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 680px;
+  margin: 0 0 40px 0;
+}
+
+/* ---------- VIDEO EMBED ---------- */
+.script-video{ margin-bottom: 40px; }
+.video-wrapper{
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  background: #000;
+}
+.video-wrapper iframe{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ---------- ASSET / SCRIPT BLOCK ---------- */
+.script-block{
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.script-block-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--header-bar);
+  border-bottom: 1px solid var(--panel-border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.script-block-header-left{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  color: var(--text-dim);
+}
+.script-lang-dot{
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 8px rgba(232,169,58,0.7);
+  display: inline-block;
+}
+.script-block-header-right{
+  display: flex;
+  gap: 10px;
+}
+
+.copy-btn, .download-btn{
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--gold-soft);
+  background: transparent;
+  color: var(--gold);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.15s ease, filter 0.15s ease;
+}
+.copy-btn:hover, .download-btn:hover{
+  background: rgba(232,169,58,0.08);
+}
+.download-btn{
+  background: var(--gold);
+  color: #1c1304;
+  border-color: var(--gold);
+}
+.download-btn:hover{
+  filter: brightness(1.08);
+  background: var(--gold);
+}
+
+/* ---------- TEXTURE PREVIEW ---------- */
+.texture-preview-wrap{
+  width: 100%;
+  padding: 28px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  background:
+    linear-gradient(45deg, rgba(255,255,255,0.04) 25%, transparent 25%) 0 0/20px 20px,
+    linear-gradient(-45deg, rgba(255,255,255,0.04) 25%, transparent 25%) 0 0/20px 20px,
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.04) 75%) 0 0/20px 20px,
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.04) 75%) 0 0/20px 20px,
+    #100c05;
+}
+.texture-preview-img{
+  width: 100%;
+  max-width: 760px;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.texture-meta-row{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--panel-border);
+  border-top: 1px solid var(--panel-border);
+}
+.texture-meta-item{
+  background: var(--header-bar);
+  padding: 16px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.texture-meta-label{
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.texture-meta-value{
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* ---------- NOTES ---------- */
+.script-notes{ margin-top: 44px; }
+.script-notes-title{
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  margin: 0 0 14px 0;
+  color: #fbf8f1;
+}
+.script-notes-list{
+  padding-left: 1.2rem;
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+.script-notes-list li{ margin-bottom: 8px; }
+.script-notes-list code{
+  font-family: var(--mono);
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  padding: 2px 7px;
+  border-radius: 4px;
+  color: var(--gold);
+  font-size: 0.9em;
+}
+
+/* ---------- FOOTER ---------- */
+.project-footer{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 48px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.back-btn{
+  color: var(--gold);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.back-btn:hover{ text-decoration: underline; }
+.project-footer p{
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 720px){
+  nav[role="navigation"]{ padding: 20px 24px; }
+  .nav-links{ gap: 20px; font-size: 0.85rem; }
+  .script-title{ font-size: 2rem; }
+  .script-block-header{ flex-direction: column; align-items: flex-start; }
+  .script-block-header-right{ width: 100%; }
+  .copy-btn, .download-btn{ flex: 1; justify-content: center; }
+  .texture-meta-row{ grid-template-columns: repeat(2, 1fr); }
+  .project-footer{ flex-direction: column; align-items: flex-start; }
+}

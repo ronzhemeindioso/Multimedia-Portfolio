@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Script – Ronz Portfolio</title>
+  <title>Jupiter Script – Ronz Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
@@ -68,8 +68,8 @@ import bpy
 import os
 import math
 
-TEXTURE_PATH = add texture path here (e.g. "C:/path/to/your/jupiter_texture.jpg")
-OUTPUT_PATH  = add output path here (e.g. "C:/path/to/output/jupiter_animation.mp4")
+TEXTURE_PATH = "add texture path here (e.g. C:/path/to/your/jupiter_texture.jpg)"
+OUTPUT_PATH  = "add output path here (e.g. C:/path/to/output/jupiter_animation.mp4)"
 
 AXIAL_TILT_DEGREES = 3.13
 
@@ -175,7 +175,6 @@ ramp_color.color_ramp.elements[0].position = 0.15
 ramp_color.color_ramp.elements[0].color    = (0.88, 0.75, 0.55, 1)
 ramp_color.color_ramp.elements[1].position = 0.85
 ramp_color.color_ramp.elements[1].color    = (0.52, 0.28, 0.12, 1)
-# FIX 2: Capture the new element directly to avoid index shifting bug
 mid = ramp_color.color_ramp.elements.new(0.50)
 mid.color = (0.78, 0.45, 0.22, 1)
 links.new(mix_noise.outputs["Color"], ramp_color.inputs["Fac"])
@@ -237,7 +236,7 @@ rim.data.size          = 10.0
 rim.data.color         = (0.95, 0.80, 0.55)
 rim.rotation_euler     = (1.57, 0, 1.57)
 
-HDR_PATH = add hdr path here (e.g. "C:/path/to/your/hdr_image.hdr")
+HDR_PATH = "add hdr path here (e.g. C:/path/to/your/hdr_image.hdr)"
 
 world = bpy.data.worlds["World"]
 world.use_nodes = True
@@ -304,7 +303,6 @@ bpy.context.scene.camera = cam
 scene = bpy.context.scene
 scene.render.engine        = 'CYCLES'
 
-# FIX 3: GPU with fallback to CPU if no compatible GPU is found
 prefs = bpy.context.preferences.addons['cycles'].preferences
 prefs.compute_device_type = 'OPTIX'  # Change to 'CUDA' or 'METAL' if needed
 prefs.get_devices()
@@ -362,7 +360,6 @@ for frame_num in range(scene.frame_start, scene.frame_end + 1):
     jupiter.rotation_euler = (axial_tilt_radians, 0, total_rotation_radians)
 
     jupiter.keyframe_insert(data_path="rotation_euler", index=0)
-    # FIX 1: Also keyframe Y axis to lock it at 0 throughout the animation
     jupiter.keyframe_insert(data_path="rotation_euler", index=1)
     jupiter.keyframe_insert(data_path="rotation_euler", index=2)
 
@@ -387,7 +384,7 @@ print("=" * 60 + "\n")
           <div class="script-notes" aria-labelledby="notes-heading">
             <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
             <ul class="script-notes-list">
-              <li>Replace the placeholder code above with your actual Blender Python script.</li>
+              <li>Set TEXTURE_PATH, HDR_PATH, and OUTPUT_PATH to your actual file paths before running.</li>
               <li>Jupiter takes about 12 Earth years to complete one orbit around the Sun.</li>
               <li>Distance is scaled for visualization — not true astronomical units.</li>
             </ul>
@@ -399,10 +396,10 @@ print("=" * 60 + "\n")
     </div>
   </main>
 
-<footer class="project-footer" role="contentinfo">
-  <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
-  <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
-</footer>
+  <footer class="project-footer" role="contentinfo">
+    <a href="../solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+  </footer>
 
   <script>
     (function () {
