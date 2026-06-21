@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pluto Script – Ronz Portfolio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="../style.css"/>
-  <link rel="stylesheet" href="script-detail.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="script-detail.css">
 </head>
 <body>
 
-  <nav role="navigation" aria-label="Main navigation">
+  <nav aria-label="Main navigation">
     <div class="nav-logo">
-      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32" />
+      <img src="../images/sun.png" alt="Sun icon" class="nav-sun" width="32" height="32">
       Multimedia Portfolio
     </div>
     <ul class="nav-links">
@@ -35,13 +35,13 @@
         </div>
       </section>
 
-       <section class="script-video" aria-labelledby="video-heading">
+      <section class="script-video" aria-label="Video demo">
         <div class="script-video-inner">
+          <h2 class="visually-hidden">Video Demo</h2>
           <div class="video-wrapper">
             <iframe
               src="https://www.youtube.com/embed/aWAiyPcyY5c"
               title="Pluto Blender Animation Demo"
-              frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen>
             </iframe>
@@ -363,7 +363,7 @@ sun.rotation_euler = (1.5708, 0.0, -1.2)
 bpy.ops.object.light_add(type='POINT', location=(-8, 4, 0))
 fill = bpy.context.active_object
 fill.name = "Space_Fill"
-fill.data.energy = 30.0   # ⬆ boosted
+fill.data.energy = 30.0   # boosted
 fill.data.color  = (0.80, 0.85, 1.0)
 fill.data.shadow_soft_size = 15.0
 fill.cycles.cast_shadow = False
@@ -372,7 +372,7 @@ fill.cycles.cast_shadow = False
 bpy.ops.object.light_add(type='POINT', location=(-8, -4, 0))
 fill2 = bpy.context.active_object
 fill2.name = "Space_Fill2"
-fill2.data.energy = 30.0   # ⬆ boosted
+fill2.data.energy = 30.0   # boosted
 fill2.data.color  = (0.80, 0.85, 1.0)
 fill2.data.shadow_soft_size = 15.0
 fill2.cycles.cast_shadow = False
@@ -381,7 +381,7 @@ fill2.cycles.cast_shadow = False
 bpy.ops.object.light_add(type='AREA', location=(-10, 0, 0))
 back_fill = bpy.context.active_object
 back_fill.name = "Dark_Side_Fill"
-back_fill.data.energy        = 80.0   # ⬆ massively boosted to kill dark side
+back_fill.data.energy        = 80.0   # massively boosted to kill dark side
 back_fill.data.size          = 40.0   # larger = softer, more wrap-around
 back_fill.data.color         = (0.80, 0.85, 1.0)
 back_fill.cycles.cast_shadow = False
@@ -445,9 +445,9 @@ scene.render.resolution_y          = 1080
 scene.render.resolution_percentage = 100
 
 scene.view_settings.view_transform = 'Filmic'
-scene.view_settings.look           = 'Medium High Contrast'  # less crushing of shadows vs High Contrast
-scene.view_settings.exposure       = 0.0   # neutral — planet is bright enough from sun boost
-scene.view_settings.gamma          = 1.05  # very slight gamma lift to open up dark terrain
+scene.view_settings.look           = 'Medium High Contrast'
+scene.view_settings.exposure       = 0.0
+scene.view_settings.gamma          = 1.05
 
 scene.render.image_settings.file_format  = 'FFMPEG'
 scene.render.ffmpeg.format               = 'MPEG4'
@@ -475,7 +475,7 @@ print(f"Frame rate           : {FPS} fps")
 print(f"Animation duration   : {TOTAL_FRAMES / FPS:.1f} seconds")
 print(f"Rotation direction   : RETROGRADE (backwards)")
 print(f"Degrees traveled     : 360° (full seamless loop)")
-print(f"Speed vs Earth       : 2.0× slower (480 vs 240 frames)")
+print(f"Speed vs Earth       : 2.0x slower (480 vs 240 frames)")
 print(f"Axial tilt           : {AXIAL_TILT_DEGREES}° (upside down like Venus)")
 print("=" * 60 + "\n")
 
@@ -507,7 +507,7 @@ print("=" * 60 + "\n")
             </code></pre>
           </div>
 
-          <div class="script-notes" aria-labelledby="notes-heading">
+          <div class="script-notes">
             <h2 id="notes-heading" class="script-notes-title">Script Notes</h2>
             <ul class="script-notes-list">
               <li>Set TEXTURE_PATH, HDR_PATH, and OUTPUT_PATH to your actual file paths before running.</li>
@@ -522,10 +522,10 @@ print("=" * 60 + "\n")
     </div>
   </main>
 
-<footer class="project-footer" role="contentinfo">
-  <a href="../portfolio/solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
-  <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
-</footer>
+  <footer class="project-footer">
+    <a href="../portfolio/solarsystem.html" class="back-btn" aria-label="Back to Projects">← Back to Projects</a>
+    <p>©2026 Ronzhem Ein C. Dioso BSIT-S-2A. All rights reserved.</p>
+  </footer>
 
   <script>
     (function () {
