@@ -32,9 +32,7 @@
   font-family: 'Playfair Display', serif;
   font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 700;
-  background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  background-clip: text;
-  color: transparent;
+  color: #f5b800;
   line-height: 1.1;
   margin-bottom: 16px;
 }
@@ -70,9 +68,7 @@
   font-family: 'Playfair Display', serif;
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   font-weight: 700;
-  background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  background-clip: text;
-  color: transparent;
+  color: #f5b800;
   margin-bottom: 40px;
   text-align: center;
   width: 100%;
@@ -190,9 +186,7 @@
   font-family: 'Playfair Display', serif;
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  background-clip: text;
-  color: transparent;
+  color: #f5b800;
   line-height: 1;
 }
 
