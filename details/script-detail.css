@@ -2,7 +2,7 @@
 
 /* ── Hero ── */
 .script-hero {
-  padding: 6rem 2rem 2rem;  /* more top padding to push it down */
+  padding: 6rem 2rem 2rem;
   max-width: 900px;
   margin: 0 auto;
 }
@@ -17,7 +17,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: var(--accent, #f5b800);
+  color: #f5b800;
   text-decoration: none;
   font-size: 0.85rem;
   font-weight: 600;
@@ -35,7 +35,7 @@
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--accent, #f5b800);
+  color: #f5b800;
   opacity: 0.75;
   font-weight: 600;
 }
@@ -104,7 +104,7 @@
 .script-meta-value {
   font-weight: 700;
   font-size: 0.95rem;
-  color: var(--accent, #f5b800);
+  color: #f5b800;
 }
 
 /* ── Code block ── */
@@ -142,7 +142,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #f5b800; /* Yellow dot replacing Python blue */
+  background: #f5b800;
   display: inline-block;
 }
 
@@ -153,9 +153,9 @@
 }
 
 .copy-btn {
-  background: var(--accent, #f5b800);
+  background: #f5b800;
   color: #000;
-  border: 1px solid transparent; /* ← add this */
+  border: 1px solid transparent;
   border-radius: 6px;
   padding: 0.35rem 1rem;
   font-size: 0.78rem;
@@ -203,7 +203,7 @@
 .script-notes {
   background: rgba(245, 184, 0, 0.06);
   border: 1px solid rgba(245, 184, 0, 0.2);
-  border-left: 3px solid var(--accent, #f5b800);
+  border-left: 3px solid #f5b800;
   border-radius: 10px;
   padding: 1.5rem 1.75rem;
 }
@@ -214,7 +214,7 @@
   margin: 0 0 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent, #f5b800);
+  color: #f5b800;
   opacity: 0.9;
 }
 
@@ -243,10 +243,10 @@
 
 .download-btn {
   background: transparent;
-  color: var(--accent, #f5b800);
-  border: 1px solid var(--accent, #f5b800);
+  color: #f5b800;
+  border: 1px solid #f5b800;
   border-radius: 6px;
-  padding: 0.28rem 1rem; /* slightly reduced to compensate for the border */
+  padding: 0.28rem 1rem;
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
@@ -256,7 +256,7 @@
 }
 
 .download-btn:hover {
-  background: var(--accent, #f5b800);
+  background: #f5b800;
   color: #000;
   transform: translateY(-1px);
 }
@@ -337,7 +337,7 @@
 
 .video-wrapper {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 ratio */
+  padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
   border-radius: 10px;
