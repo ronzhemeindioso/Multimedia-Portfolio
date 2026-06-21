@@ -33,9 +33,8 @@
   font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   line-height: 1.1;
   margin-bottom: 16px;
 }
@@ -72,9 +71,8 @@
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   margin-bottom: 40px;
   text-align: center;
   width: 100%;
@@ -193,9 +191,8 @@
   font-size: 2rem;
   font-weight: 700;
   background: linear-gradient(90deg, #f5b800 0%, #ff6b00 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
   line-height: 1;
 }
 
@@ -402,7 +399,6 @@
   font-family: 'Source Sans 3', sans-serif;
   outline: none;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   transition: border-color 0.2s, background 0.2s;
   min-width: 0;
 }
@@ -698,7 +694,6 @@ video.celestial-img:hover {
   }
 
   .celestial-card {
-    /* Stack image on top of info on mid-size screens */
     grid-template-columns: 1fr;
     gap: 20px;
   }
@@ -719,7 +714,6 @@ video.celestial-img:hover {
     min-height: unset;
   }
 
-  /* Reorder so image appears below info */
   .celestial-info { order: 1; }
   .celestial-img-wrap { order: 2; }
 
@@ -734,7 +728,6 @@ video.celestial-img:hover {
    RESPONSIVE — 768px (tablets portrait)
    ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* Nav */
   nav {
     flex-direction: column;
     align-items: flex-start;
@@ -748,7 +741,6 @@ video.celestial-img:hover {
     gap: 12px;
   }
 
-  /* Hero */
   .project-hero {
     padding: 100px 6% 48px;
     min-height: 40vh;
@@ -758,12 +750,10 @@ video.celestial-img:hover {
     gap: 8px;
   }
 
-  /* Content sections */
   .content-section {
     padding: 52px 6%;
   }
 
-  /* Overview stats — go vertical */
   .overview-stats {
     flex-direction: column;
     align-items: stretch;
@@ -779,12 +769,10 @@ video.celestial-img:hover {
     padding: 20px 16px;
   }
 
-  /* Details groups */
   .details-group {
     padding: 20px 20px;
   }
 
-  /* Sequence — hide the image column */
   .sequence-item {
     grid-template-columns: 48px 1fr;
     padding: 20px 20px;
@@ -795,7 +783,6 @@ video.celestial-img:hover {
     display: none;
   }
 
-  /* Celestial cards — single column */
   .celestial-card {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -821,7 +808,6 @@ video.celestial-img:hover {
     min-height: unset;
   }
 
-  /* Calculator */
   .calc-section-inner {
     padding: 48px 6%;
   }
@@ -830,7 +816,6 @@ video.celestial-img:hover {
     max-width: 100%;
   }
 
-  /* Footer */
   .project-footer {
     flex-direction: column;
     gap: 16px;
@@ -843,7 +828,6 @@ video.celestial-img:hover {
    RESPONSIVE — 600px (large phones)
    ══════════════════════════════════════════ */
 @media (max-width: 600px) {
-  /* Calculator input stacks */
   .calc-section .calc-input-row {
     flex-direction: column;
     align-items: stretch;
@@ -855,7 +839,6 @@ video.celestial-img:hover {
     text-align: center;
   }
 
-  /* Celestial stat rows: allow wrapping on very small text */
   .celestial-stat-row {
     flex-wrap: wrap;
     gap: 4px;
@@ -896,7 +879,6 @@ video.celestial-img:hover {
     font-size: 0.9rem;
   }
 
-  /* Sequence */
   .sequence-number {
     font-size: 1.8rem;
   }
@@ -909,7 +891,6 @@ video.celestial-img:hover {
     font-size: 0.85rem;
   }
 
-  /* Celestial cards */
   .celestial-info {
     padding: 20px 16px;
     gap: 14px;
@@ -945,7 +926,6 @@ video.celestial-img:hover {
     padding: 6px 14px;
   }
 
-  /* Details groups */
   .details-group {
     padding: 16px;
   }
@@ -954,7 +934,6 @@ video.celestial-img:hover {
     font-size: 0.88rem;
   }
 
-  /* Stats */
   .overview-stats {
     border-radius: 12px;
   }
@@ -971,7 +950,6 @@ video.celestial-img:hover {
     font-size: 0.7rem;
   }
 
-  /* Calculator */
   .calc-section-inner {
     padding: 40px 5%;
     gap: 8px;
@@ -981,7 +959,6 @@ video.celestial-img:hover {
     font-size: 1rem;
   }
 
-  /* Footer */
   .project-footer {
     padding: 28px 5%;
     font-size: 0.82rem;
@@ -992,7 +969,6 @@ video.celestial-img:hover {
     padding: 10px 22px;
   }
 
-  /* Sequence item */
   .sequence-item {
     padding: 16px;
     gap: 12px;
