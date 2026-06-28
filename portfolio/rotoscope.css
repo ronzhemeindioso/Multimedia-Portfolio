@@ -473,3 +473,36 @@ body {
   .steps-card-body { padding: 12px 12px; }
   .nav-links a { font-size: 0.85rem; }
 }
+
+/* ── TOOLS BOX ── */
+.tools-box {
+  background: #0e0b00;
+  border: 1.5px solid rgba(245,184,0,0.2);
+  border-radius: 16px;
+  padding: 36px 40px;
+  max-width: 900px;
+  width: 100%;
+  text-align: left;
+}
+
+.tools-box-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.tools-list {
+  list-style: disc;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tools-list li {
+  font-size: 1rem;
+  font-weight: 300;
+  color: #d4c9a0;
+  line-height: 1.7;
+}
