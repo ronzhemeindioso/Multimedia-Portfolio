@@ -771,7 +771,7 @@ def build_asteroid_belt(num_asteroids=500, inner_r=26.0, outer_r=31.5,
     rogue_span  = (outer_r - inner_r)
 
     for i in range(num_rogues):
-        if random.random() < 0.5:
+        if random.random() &lt; 0.5:
             radius = random.uniform(inner_r - rogue_span * 0.6, inner_r - 0.5)
         else:
             radius = random.uniform(outer_r + 0.5, outer_r + rogue_span * 0.6)
@@ -848,7 +848,7 @@ def build_kuiper_belt(num_kbos=700, inner_r=68.0, outer_r=88.0,
     )
 
     for i in range(num_rogues):
-        if random.random() < 0.20:
+         if random.random() &lt; 0.20:
             radius = random.uniform(inner_r - rogue_span * 0.25, inner_r - 0.5)
         else:
             radius = random.uniform(outer_r + 0.5, outer_r + rogue_span * 1.0)
@@ -1646,7 +1646,7 @@ def animate_planet_cinematic(name, orbit_r, period, anim_obj,
     if anim_obj.animation_data and anim_obj.animation_data.action:
         for fc in anim_obj.animation_data.action.fcurves:
             for kf in fc.keyframe_points:
-                if kf.co[0] <= SCATTER_END:
+                 if random.random() &lt; 0.20:
                     kf.interpolation     = "BEZIER"
                     kf.handle_left_type  = "AUTO_CLAMPED"
                     kf.handle_right_type = "AUTO_CLAMPED"
