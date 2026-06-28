@@ -848,7 +848,7 @@ def build_kuiper_belt(num_kbos=700, inner_r=68.0, outer_r=88.0,
     )
 
     for i in range(num_rogues):
-         if random.random() &lt; 0.20:
+        if random.random() &lt; 0.20:
             radius = random.uniform(inner_r - rogue_span * 0.25, inner_r - 0.5)
         else:
             radius = random.uniform(outer_r + 0.5, outer_r + rogue_span * 1.0)
@@ -1222,7 +1222,7 @@ def world_spin_direction(axial_tilt_deg, base_direction):
 
 
 def add_starfield():
-    milky_way_path = r"add milky_way_texture here"
+    milky_way_path = r"add your path to the milky way texture here"
     
     bpy.ops.mesh.primitive_ico_sphere_add(radius=500, subdivisions=3, location=(0, 0, 0))
     sphere = bpy.context.active_object
@@ -1417,18 +1417,18 @@ MOON_ORBIT_PHASE_DEG = (
 ) % 360.0
 
 TEXTURE_URLS = {
-    "Sun":         r"add sun_texture here",
-    "Mercury":     r"add mercury_texture here",
-    "Venus":       r"add venus_texture here",
-    "Earth":       r"add earth_texture here",
-    "Mars":        r"add mars_texture here",
-    "Jupiter":     r"add jupiter_texture here",
-    "Saturn":      r"add saturn_texture here",
-    "Saturn_Ring": r"add saturn_ring_texture here",
-    "Uranus":      r"add uranus_texture here",
-    "Neptune":     r"add neptune_texture here",
-    "Moon":        r"add moon_texture here",
-    "Pluto":       r"add pluto_texture here",
+    "Sun":         r"add your path to the sun texture here",
+    "Mercury":     r"add your path to the mercury texture here",
+    "Venus":       r"add your path to the venus texture here",
+    "Earth":       r"add your path to the earth texture here",
+    "Mars":        r"add your path to the mars texture here",
+    "Jupiter":     r"add your path to the jupiter texture here",
+    "Saturn":      r"add your path to the saturn texture here",
+    "Saturn_Ring": r"add your path to the saturn ring texture here",
+    "Uranus":      r"add your path to the uranus texture here",
+    "Neptune":     r"add your path to the neptune texture here",
+    "Moon":        r"add your path to the moon texture here",
+    "Pluto":       r"add your path to the pluto texture here",
 }
 
 
@@ -1646,7 +1646,7 @@ def animate_planet_cinematic(name, orbit_r, period, anim_obj,
     if anim_obj.animation_data and anim_obj.animation_data.action:
         for fc in anim_obj.animation_data.action.fcurves:
             for kf in fc.keyframe_points:
-                 if random.random() &lt; 0.20:
+                if kf.co[0] &lt;= SCATTER_END:
                     kf.interpolation     = "BEZIER"
                     kf.handle_left_type  = "AUTO_CLAMPED"
                     kf.handle_right_type = "AUTO_CLAMPED"
