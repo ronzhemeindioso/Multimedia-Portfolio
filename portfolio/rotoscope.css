@@ -118,8 +118,8 @@ body {
   aspect-ratio: 16 / 9;
   border-radius: 16px;
   overflow: hidden;
-  border: 1.5px solid rgba(245,184,0,0.3);
-  background: #111;
+  border: none;
+  background: transparent;
 }
 
 .video-wrapper iframe {
