@@ -116,10 +116,10 @@ body {
   width: 100%;
   max-width: 900px;
   aspect-ratio: 16 / 9;
-  border-radius: 16px;
+  border-radius: 0;
   overflow: hidden;
   border: none;
-  background: transparent;
+  background: #000;
 }
 
 .video-wrapper iframe {
@@ -127,6 +127,7 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
+  border: none; 
 }
 
 .video-caption {
