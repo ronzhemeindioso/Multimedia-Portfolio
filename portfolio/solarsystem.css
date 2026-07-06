@@ -1018,12 +1018,13 @@ video.celestial-img:hover {
 }
 
 .process-number {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: rgba(245,184,0,0.4);
-  line-height: 1;
-  margin-bottom: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #f5b800;
+  margin-bottom: 10px;
 }
 
 .process-card h3 {
